@@ -163,6 +163,7 @@ namespace Rock.NMI.Controls
             additionalAttributes.Add( "data-tokenization-key", this.TokenizationKey );
             additionalAttributes.Add( "data-variant", "inline" );
             RockPage.AddScriptSrcToHead( this.Page, "nmiCollectJS", $"https://secure.tnbcigateway.com/token/Collect.js", additionalAttributes );
+            RockPage.AddStyleToHead( this.Page, "nmiCollectJSCSS", Css.gatewayCollect );
 
             // Script that contains the initializeTokenizer scripts for us to use on the client
             if ( !Page.IsPostBack )

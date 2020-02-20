@@ -27,6 +27,10 @@
 
                 self.$paymentButton = $('.js-payment-button', $control);
                 self.$paymentValidation = $('.js-payment-input-validation', $control);
+
+                // remove the display style that was rendered so that hide/show works
+                self.$paymentValidation.css({ display: '' });
+
                 self.$paymentValidation.hide();
                 self.validationFieldStatus = {
                     ccnumber: {},
@@ -155,7 +159,7 @@
 
                     // CollectJS uses timeoutDuration and timeoutCallback to handle either connectivity issues, or invalid input
                     // In other words, if input is invalid, CollectJS just times out (it doesn't tell us)
-                    timeoutDuration: 4000,
+                    timeoutDuration: 10000,
                     timeoutCallback: function () {
 
                         // a timeout callback will fire due to a timeout or incomplete input fields (CollectJS doesn't tell us why)
@@ -230,7 +234,18 @@
                     position: 'absolute',
                 });
 
-                CollectJS.configure(self.collectJSSettings);
+                try {
+                    CollectJS.configure(self.collectJSSettings);
+                }
+                catch (err) {
+                    debugger
+                    var $validationMessage = self.$paymentValidation.find('.js-validation-message')
+                    $validationMessage.text('Error configuring hosted gateway. This could be due to an invalid or missing Tokenization Key. Please verify that Tokenization Key is configured correctly in gateway settings.');
+                    self.$paymentValidation.show();
+                    return;
+                    // we'll get a CollectJS doesn't exist, which could happen if the tokenization key is missing or incorrect
+
+                }
 
                 /* Payment Selector Stuff*/
                 //// Credit Card

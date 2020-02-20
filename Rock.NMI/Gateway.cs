@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web.UI;
 using System.Xml.Linq;
 
 using RestSharp;
@@ -237,18 +239,7 @@ namespace Rock.NMI
             return parameters;
         }
 
-        /// <summary>
-        /// Charges the specified payment info.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentInfo">The payment info.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public override FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "The Payment Gateway only supports a three-step charge.";
-            return null;
-        }
+        
 
         /// <summary>
         /// Performs the first step of a three-step charge
@@ -1413,7 +1404,137 @@ namespace Rock.NMI
             }
         }
 
+        /// <summary>
+        /// Charges the specified payment info.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
+            if ( referencedPaymentInfo == null )
+            {
+                throw new ReferencePaymentInfoRequired();
+            }
+
+            var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
+            var tokenizerToken = referencedPaymentInfo.ReferenceNumber;
+            var amount = referencedPaymentInfo.Amount;
+
+
+            // https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#transaction_variables
+            var queryParameters = new Dictionary<string, string>();
+            queryParameters.Add( "type", "sale" );
+            queryParameters.Add( "security_key", GetAttributeValue( financialGateway, AttributeKey.SecurityKey ) );
+
+            if ( customerId.IsNotNullOrWhiteSpace() )
+            {
+                queryParameters.Add( "customer_vault_id", customerId );
+            }
+            else
+            {
+                queryParameters.Add( "payment_token", tokenizerToken );
+            }
+            
+            queryParameters.Add( "amount", amount.ToString( "0.00" ) );
+
+            PopulateAddressParameters( referencedPaymentInfo, queryParameters );
+
+            StringBuilder stringBuilderDescription = new StringBuilder();
+            if ( referencedPaymentInfo.Description.IsNotNullOrWhiteSpace() )
+            {
+                stringBuilderDescription.AppendLine( referencedPaymentInfo.Description );
+            }
+
+            if ( referencedPaymentInfo.Comment1.IsNotNullOrWhiteSpace() )
+            {
+                stringBuilderDescription.AppendLine( referencedPaymentInfo.Comment1 );
+            }
+
+            if ( referencedPaymentInfo.Comment2.IsNotNullOrWhiteSpace() )
+            {
+                stringBuilderDescription.AppendLine( referencedPaymentInfo.Comment2 );
+            }
+
+            var description = stringBuilderDescription.ToString().Truncate( 255 );
+
+            queryParameters.Add( "order_description", description );
+            queryParameters.Add( "ipaddress", referencedPaymentInfo.IPAddress );
+
+
+            var response = PostToGatewayDirectPostAPI( financialGateway, queryParameters );
+
+            if ( response.GetValueOrNull( "response" ) != "1" )
+            {
+                errorMessage = response.GetValueOrNull( "response-text" );
+                return null;
+            }
+
+//            return null;
+
+            var transaction = new FinancialTransaction();
+            transaction.TransactionCode = response.GetValueOrNull( "transaction-id" );
+            transaction.ForeignKey = response.GetValueOrNull( "customer-vault-id" );
+            transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+
+            string ccNumber = response.GetValueOrNull( "billing_cc-number" );
+            if ( !string.IsNullOrWhiteSpace( ccNumber ) )
+            {
+                // cc payment
+                var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+                transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{response.GetValueOrNull( "billing_first-name" )} {response.GetValueOrNull( "billing_last-name" )}" );
+                transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
+                transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
+                transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
+
+                string mmyy = response.GetValueOrNull( "billing_cc-exp" );
+                if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
+                {
+                    transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
+                    transaction.FinancialPaymentDetail.ExpirationYearEncrypted = Encryption.EncryptString( mmyy.Substring( 2, 2 ) );
+                }
+            }
+            else
+            {
+                // ach payment
+                var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
+                transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
+                transaction.FinancialPaymentDetail.AccountNumberMasked = response.GetValueOrNull( "billing_account-number" ).Masked( true );
+            }
+
+            transaction.AdditionalLavaFields = new Dictionary<string, object>();
+            foreach ( var keyVal in response )
+            {
+                transaction.AdditionalLavaFields.Add( keyVal.Key, keyVal.Value );
+            }
+
+            return transaction;
+
+        }
+
         #endregion DirectPost API related
+
+        #region Exceptions
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="System.Exception" />
+        public class ReferencePaymentInfoRequired : Exception
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ReferencePaymentInfoRequired"/> class.
+            /// </summary>
+            public ReferencePaymentInfoRequired()
+                : base( "NMI gateway requires a token or customer reference" )
+            {
+            }
+        }
+
+        #endregion 
 
         #region IHostedGatewayComponent
 
@@ -1500,9 +1621,10 @@ namespace Rock.NMI
 
         public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
         {
-            errorMessage = null;
 
-            /*var tokenResponse = ( hostedPaymentInfoControl as NMIHostedPaymentControl ).PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
+            var nmiHostedPaymentControl = hostedPaymentInfoControl as NMIHostedPaymentControl;
+            errorMessage = null;
+            var tokenResponse = nmiHostedPaymentControl.PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
             if ( tokenResponse?.IsSuccessStatus() != true )
             {
                 if ( tokenResponse.HasValidationError() )
@@ -1511,13 +1633,12 @@ namespace Rock.NMI
                 }
 
                 errorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
-                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as NMIHostedPaymentControl ).PaymentInfoToken;
+                referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
             }
             else
             {
-                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as NMIHostedPaymentControl ).PaymentInfoToken;
+                referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
             }
-            */
         }
 
         /// <summary>
@@ -1535,12 +1656,39 @@ namespace Rock.NMI
             // see https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#cv_variables
             var queryParameters = new Dictionary<string, string>();
             queryParameters.Add( "customer_vault", "add_customer" );
-            queryParameters.Add( "payment_token", paymentInfo.GatewayPersonIdentifier );
+            queryParameters.Add( "payment_token", paymentInfo.ReferenceNumber );
+            PopulateAddressParameters( paymentInfo, queryParameters );
 
             var response = PostToGatewayDirectPostAPI( financialGateway, queryParameters );
 
+            if ( response.GetValueOrNull( "response" ) != "1" )
+            {
+                errorMessage = response.GetValueOrNull( "response-text" );
+                return null;
+            }
+
             // TODO
-            return response.ToJson();
+            return response.GetValueOrNull( "customer_vault_id" );
+        }
+
+        /// <summary>
+        /// Populates the address parameters.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="queryParameters">The query parameters.</param>
+        private static void PopulateAddressParameters( ReferencePaymentInfo paymentInfo, Dictionary<string, string> queryParameters )
+        {
+            queryParameters.Add( "first_name", paymentInfo.FirstName );
+            queryParameters.Add( "last_name", paymentInfo.LastName );
+            queryParameters.Add( "address1", paymentInfo.Street1 );
+            queryParameters.Add( "address2", paymentInfo.Street2 );
+            queryParameters.Add( "city", paymentInfo.City );
+            queryParameters.Add( "state", paymentInfo.State );
+            queryParameters.Add( "zip", paymentInfo.PostalCode );
+            queryParameters.Add( "country", paymentInfo.Country );
+            queryParameters.Add( "phone", paymentInfo.Phone );
+            queryParameters.Add( "email", paymentInfo.Email );
+            queryParameters.Add( "company", paymentInfo.BusinessName );
         }
 
         /// <summary>

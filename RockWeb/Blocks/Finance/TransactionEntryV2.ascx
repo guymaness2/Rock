@@ -94,6 +94,7 @@
 								<%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
                                		Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
                             	--%>
+                                <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right"  DataLoadingText="Processing..." />
                             </div>
                         </asp:Panel>
 

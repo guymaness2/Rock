@@ -162,8 +162,6 @@ namespace Rock.NMI.Controls
             RockPage.AddScriptSrcToHead( this.Page, "nmiCollectJS", $"https://secure.tnbcigateway.com/token/Collect.js", additionalAttributes );
 
             // Script that contains the initializeTokenizer scripts for us to use on the client
-            //Page.ClientScript.RegisterClientScriptBlock( this.Page.GetType(), "nmiGatewayCollectJSBlock", Scripts.gatewayCollectJS, true );
-            //Page.ClientScript.RegisterStartupScript( this.Page.GetType(), "nmiGatewayCollectJSStartup", $"Rock.NMI.controls.gatewayCollectJS.initialize('{this.ClientID}');", true );
             if ( !Page.IsPostBack )
             {
                 ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "nmiGatewayCollectJSBlock", Scripts.gatewayCollectJS, true );
@@ -345,7 +343,7 @@ namespace Rock.NMI.Controls
 <ul>
 <li><span class='js-validation-message'></span></li>
 </ul>";
-            pnlPaymentInputs.Controls.Add( _divValidationMessage );
+            this.Controls.Add( _divValidationMessage );
 
             _hiddenInputStyleHook = new TextBox();
             _hiddenInputStyleHook.Attributes["class"] = "js-input-style-hook form-control nmi-input-style-hook form-group";
@@ -353,12 +351,12 @@ namespace Rock.NMI.Controls
 
             // set text so that placeholder css can be jquery'd
             _hiddenInputStyleHook.Attributes["placeholder"] = "placeholder text hook";
-            
+
             Controls.Add( _hiddenInputStyleHook );
 
             Controls.Add( pnlPaymentInputs );
         }
 
-       
+
     }
 }

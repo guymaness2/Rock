@@ -472,6 +472,7 @@
     <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
     <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
     <Compile Include="Financial\HostedGatewayMode.cs" />
+    <Compile Include="Jobs\ConnectionRequestWorkflowTriggers.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\SendRsvpReminders.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
@@ -548,6 +549,7 @@
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\HttpContextExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\TypeExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Utility\SingleOrArrayJsonConverter.cs" />
     <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />

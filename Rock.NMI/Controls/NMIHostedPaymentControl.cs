@@ -58,7 +58,6 @@ namespace Rock.NMI.Controls
         private TextBox _hiddenInputStyleHook;
 
         private HtmlGenericControl _divInputInvalid;
-        private TextBox _hiddenInputInvalidStyleHook;
 
         private Panel _paymentTypeSelector;
         private Panel _gatewayCreditCardContainer;

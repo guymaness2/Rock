@@ -23,8 +23,9 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web.UI;
+using System.Xml;
 using System.Xml.Linq;
-
+using Newtonsoft.Json;
 using RestSharp;
 
 using Rock.Attribute;
@@ -239,7 +240,7 @@ namespace Rock.NMI
             return parameters;
         }
 
-        
+
 
         /// <summary>
         /// Performs the first step of a three-step charge
@@ -351,9 +352,10 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    var resultText = result.GetValueOrNull( "result-text" );
+                    errorMessage = resultText;
 
-                    string resultCodeMessage = GetResultCodeMessage( result );
+                    string resultCodeMessage = GetResultCodeMessage( result.GetValueOrNull( "result-code" )?.AsInteger() ?? 0, resultText );
                     if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                     {
                         errorMessage += string.Format( " ({0})", resultCodeMessage );
@@ -1102,11 +1104,12 @@ namespace Rock.NMI
         /// <summary>
         /// Gets the result code message.
         /// </summary>
-        /// <param name="result">The result.</param>
+        /// <param name="resultCode">The result code.</param>
+        /// <param name="resultText">The result text.</param>
         /// <returns></returns>
-        private string GetResultCodeMessage( Dictionary<string, string> result )
+        private string GetResultCodeMessage( int resultCode, string resultText )
         {
-            switch ( result.GetValueOrNull( "result-code" ).AsInteger() )
+            switch ( resultCode )
             {
                 case 100:
                     {
@@ -1179,12 +1182,12 @@ namespace Rock.NMI
                 case 253: // fradulent card
                     {
                         // these are more sensitive declines so sanitize them a bit but provide a code for later lookup
-                        return string.Format( "This card was declined (code: {0}).", result.GetValueOrNull( "result-code" ) );
+                        return string.Format( "This card was declined (code: {0}).", resultCode );
                     }
 
                 case 260:
                     {
-                        return string.Format( "Declined with further instructions available. ({0})", result.GetValueOrNull( "result-text" ) );
+                        return string.Format( "Declined with further instructions available. ({0})", resultText );
                     }
 
                 case 261:
@@ -1341,7 +1344,7 @@ namespace Rock.NMI
         /// <param name="data">The data.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception"></exception>
-        private Dictionary<string, string> PostToGatewayDirectPostAPI( FinancialGateway financialGateway, Dictionary<string, string> queryParameters )
+        private T PostToGatewayDirectPostAPI<T>( FinancialGateway financialGateway, Dictionary<string, string> queryParameters )
         {
             var directPostApiURL = GetAttributeValue( financialGateway, AttributeKey.DirectPostAPIUrl );
             var restClient = new RestClient( directPostApiURL );
@@ -1364,6 +1367,9 @@ namespace Rock.NMI
                 var xdocResult = GetXmlResponse( response );
                 if ( xdocResult != null )
                 {
+                    var jsonResponse = JsonConvert.SerializeXNode( xdocResult.Root );
+
+                    /*
                     // Convert XML result to a dictionary
                     var result = new Dictionary<string, string>();
                     foreach ( XElement element in xdocResult.Root.Elements() )
@@ -1380,17 +1386,18 @@ namespace Rock.NMI
                         {
                             result.AddOrIgnore( element.Name.LocalName, element.Value.Trim() );
                         }
-                    }
+                    }*/
 
-                    return result;
+                    return jsonResponse.FromJsonOrNull<T>();
                 }
                 else
                 {
                     // response in the form of response=3&responsetext=Plan Payments is required REFID:123456789&authcode=&transactionid=&avsresponse=&cvvresponse=&orderid=&type=&response_code=300&customer_vault_id=
                     // so convert this to a dictionary
-                    var result = response?.Content?.Split( '&' ).ToList().Select( s => s.Split( '=' ) ).Where( a => a.Length == 2 ).ToDictionary( k => k[0], v => v[1] );
+                    var resultAsDictionary = response?.Content?.Split( '&' ).ToList().Select( s => s.Split( '=' ) ).Where( a => a.Length == 2 ).ToDictionary( k => k[0], v => v[1] );
 
-                    return result;
+                    var chargeResult = resultAsDictionary.ToJson().FromJsonOrNull<T>();
+                    return chargeResult;
                 }
             }
             catch ( WebException webException )
@@ -1424,11 +1431,9 @@ namespace Rock.NMI
             var tokenizerToken = referencedPaymentInfo.ReferenceNumber;
             var amount = referencedPaymentInfo.Amount;
 
-
             // https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#transaction_variables
             var queryParameters = new Dictionary<string, string>();
             queryParameters.Add( "type", "sale" );
-            queryParameters.Add( "security_key", GetAttributeValue( financialGateway, AttributeKey.SecurityKey ) );
 
             if ( customerId.IsNotNullOrWhiteSpace() )
             {
@@ -1438,7 +1443,7 @@ namespace Rock.NMI
             {
                 queryParameters.Add( "payment_token", tokenizerToken );
             }
-            
+
             queryParameters.Add( "amount", amount.ToString( "0.00" ) );
 
             PopulateAddressParameters( referencedPaymentInfo, queryParameters );
@@ -1464,33 +1469,44 @@ namespace Rock.NMI
             queryParameters.Add( "order_description", description );
             queryParameters.Add( "ipaddress", referencedPaymentInfo.IPAddress );
 
+            var chargeResponse = PostToGatewayDirectPostAPI<ChargeResponse>( financialGateway, queryParameters );
 
-            var response = PostToGatewayDirectPostAPI( financialGateway, queryParameters );
-
-            if ( response.GetValueOrNull( "response" ) != "1" )
+            // NOTE: When debugging, you might get a Duplicate Transaction error if using the same CustomerVaultId and Amount within a short window ( maybe around 20 minutes? ) 
+            if ( chargeResponse.Response != "1" )
             {
-                errorMessage = response.GetValueOrNull( "response-text" );
+                errorMessage = chargeResponse.ResponseText;
+
+                string resultCodeMessage = GetResultCodeMessage( chargeResponse.ResponseCode.AsInteger(), chargeResponse.ResponseText );
+                if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
+                {
+                    errorMessage += string.Format( " ({0})", resultCodeMessage );
+                }
+
+                // write result error as an exception
+                var exception = new Exception( $"Error processing NMI transaction. Result Code:  {chargeResponse.ResponseCode} ({resultCodeMessage}). Result text: {chargeResponse.ResponseText} " );
+                ExceptionLogService.LogException( exception );
+
                 return null;
             }
 
-//            return null;
-
             var transaction = new FinancialTransaction();
-            transaction.TransactionCode = response.GetValueOrNull( "transaction-id" );
-            transaction.ForeignKey = response.GetValueOrNull( "customer-vault-id" );
+            transaction.TransactionCode = chargeResponse.TransactionId;
+            transaction.ForeignKey = chargeResponse.CustomerVaultId;
             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
-            string ccNumber = response.GetValueOrNull( "billing_cc-number" );
+            var customerInfo = this.GetCustomerVaultQueryResponse( financialGateway, customerId )?.CustomerVault.Customer;
+
+            string ccNumber = customerInfo.CcNumber;
             if ( !string.IsNullOrWhiteSpace( ccNumber ) )
             {
                 // cc payment
                 var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-                transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{response.GetValueOrNull( "billing_first-name" )} {response.GetValueOrNull( "billing_last-name" )}" );
+                transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{customerInfo.FirstName} {customerInfo.LastName}" );
                 transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                 transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                 transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
-                string mmyy = response.GetValueOrNull( "billing_cc-exp" );
+                string mmyy = customerInfo.CcExp;
                 if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                 {
                     transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
@@ -1502,17 +1518,39 @@ namespace Rock.NMI
                 // ach payment
                 var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                 transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                transaction.FinancialPaymentDetail.AccountNumberMasked = response.GetValueOrNull( "billing_account-number" ).Masked( true );
+                transaction.FinancialPaymentDetail.AccountNumberMasked = customerInfo.CheckAccount;
             }
 
-            transaction.AdditionalLavaFields = new Dictionary<string, object>();
-            foreach ( var keyVal in response )
-            {
-                transaction.AdditionalLavaFields.Add( keyVal.Key, keyVal.Value );
-            }
+            transaction.AdditionalLavaFields = chargeResponse.ToJson().FromJsonOrNull<Dictionary<string, object>>();
 
             return transaction;
 
+        }
+
+        /// <summary>
+        /// Gets the customer vault query response.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="customerVaultId">The customer vault identifier.</param>
+        /// <returns></returns>
+        private CustomerVaultQueryResponse GetCustomerVaultQueryResponse( FinancialGateway financialGateway, string customerVaultId )
+        {
+            var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryUrl ) );
+            var restRequest = new RestRequest( Method.GET );
+
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, AttributeKey.AdminPassword ) );
+            restRequest.AddParameter( "report_type", "customer_vault" );
+            restRequest.AddParameter( "customer_vault_id", customerVaultId );
+
+            var response = restClient.Execute( restRequest );
+            XDocument doc = XDocument.Parse( response.Content );
+
+            var customerVaultNode = doc.Descendants( "customer_vault" ).FirstOrDefault();
+            var jsonResponse = JsonConvert.SerializeXNode( customerVaultNode );
+
+            CustomerVaultQueryResponse customerVaultQueryResponse = jsonResponse.FromJsonOrNull<CustomerVaultQueryResponse>();
+            return customerVaultQueryResponse;
         }
 
         #endregion DirectPost API related
@@ -1619,6 +1657,13 @@ namespace Rock.NMI
             return $"Rock.NMI.controls.gatewayCollectJS.submitPaymentInfo('{hostedPaymentInfoControl.ClientID}');";
         }
 
+        /// <summary>
+        /// Gets the paymentInfoToken that the hostedPaymentInfoControl returned (see also <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" />)
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
+        /// <param name="referencePaymentInfo">The reference payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
         public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
         {
 
@@ -1659,16 +1704,27 @@ namespace Rock.NMI
             queryParameters.Add( "payment_token", paymentInfo.ReferenceNumber );
             PopulateAddressParameters( paymentInfo, queryParameters );
 
-            var response = PostToGatewayDirectPostAPI( financialGateway, queryParameters );
+            var createCustomerResponse = PostToGatewayDirectPostAPI<CreateCustomerResponse> ( financialGateway, queryParameters );
 
-            if ( response.GetValueOrNull( "response" ) != "1" )
+            if ( createCustomerResponse.Response != "1" )
             {
-                errorMessage = response.GetValueOrNull( "response-text" );
+                errorMessage = createCustomerResponse.ResponseText;
+
+                string resultCodeMessage = GetResultCodeMessage( createCustomerResponse.ResponseCode.AsInteger(), createCustomerResponse.ResponseText );
+                if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
+                {
+                    errorMessage += string.Format( " ({0})", resultCodeMessage );
+                }
+
+                // write result error as an exception
+                var exception = new Exception( $"Error creating NMI customer. Result Code:  {createCustomerResponse.ResponseCode} ({resultCodeMessage}). Result text: {createCustomerResponse.ResponseText} " );
+                ExceptionLogService.LogException( exception );
+
                 return null;
             }
 
-            // TODO
-            return response.GetValueOrNull( "customer_vault_id" );
+
+            return createCustomerResponse.CustomerVaultId;
         }
 
         /// <summary>

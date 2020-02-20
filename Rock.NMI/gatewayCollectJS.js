@@ -57,8 +57,8 @@
                     return $('.js-input-style-hook').css(style)
                 };
 
-                var inputPlaceholderStyles = function (style) {
-                    return $('.js-input-style-hook[placeholder]').css(style)
+                var inputInvalidStyles = function (style) {
+                    return $('.js-input-invalid-style-hook').css(style)
                 };
 
                 self.collectJSSettings = {
@@ -79,28 +79,28 @@
                         ccexp: {
                             selector: '#' + controlId + ' .js-credit-card-exp-input',
                             title: "Card Expiration",
-                            placeholder: "00/00"
+                            placeholder: "MM / YY"
                         },
                         cvv: {
                             display: "show",
                             selector: '#' + controlId + ' .js-credit-card-cvv-input',
                             title: "CVV Code",
-                            placeholder: "***"
+                            placeholder: "CVV"
                         },
                         checkaccount: {
                             selector: '#' + controlId + ' .js-check-account-number-input',
                             title: "Account Number",
-                            placeholder: "0000000000"
+                            placeholder: "Account Number"
                         },
                         checkaba: {
                             selector: '#' + controlId + ' .js-check-routing-number-input',
                             title: "Routing Number",
-                            placeholder: "000000000"
+                            placeholder: "Routing Number"
                         },
                         checkname: {
                             selector: '#' + controlId + ' .js-check-fullname-input',
                             title: "Name on Checking Account",
-                            placeholder: "Ted Decker"
+                            placeholder: "Name on Account"
                         }
                     },
 
@@ -131,28 +131,24 @@
                         'border-style': inputStyles('border-style'),
                         'border-radius': inputStyles('border-radius'),
                         'border-color': inputStyles('border-color'),
-                        'margin-top': inputStyles('margin-top'),
-                        'margin-bottom': inputStyles('margin-bottom'),
                         'background-color': inputStyles('background-color'),
                         'box-shadow': inputStyles('box-shadow'),
+                        'margin-bottom': '5px',
+                        'margin-top': '0',
                         'padding': inputStyles('padding'),
                         'font-size': inputStyles('font-size'),
                         'height': inputStyles('height'),
                         'font-family': inputStyles('font-family'),
                     },
                     focusCss: {
-                        'border': getComputedStyle(document.documentElement).getPropertyValue('--focus-state-border'),
-                        'box-shadow': getComputedStyle(document.documentElement).getPropertyValue('--focus-state-shadow')
+                        'border-color': getComputedStyle(document.documentElement).getPropertyValue('--focus-state-border-color'),
+                        'outline-style': 'none'
                     },
                     invalidCss: {
-                        "border-color": "red",
-                    },
-                    validCss: {
-                        // if we want to indicate which fields have passed validation (by CollectJS)...
-                        //"border-color": "green",
+                        "border-color": inputInvalidStyles('border-color'),
                     },
                     placeholderCss: {
-                        'color': inputPlaceholderStyles('color'),
+                        'color': getComputedStyle(document.documentElement).getPropertyValue('--input-placeholder')
                     },
 
                     /* Callback options*/
@@ -195,22 +191,7 @@
                     // Note that it adds the inputs to the DOM one at a time, and then fires this callback when all of them have been created.
                     fieldsAvailableCallback: function (a, b, c) {
 
-                        // undo temporarily moving the inputs off screen to avoid seeing input fields getting created by CollectJS
-                        self.$paymentInputs.css({
-                            left: '',
-                            top: '',
-                            position: '',
-                        });
 
-                        // show default payment type
-                        if (enabledPaymentTypes.includes('card')) {
-                            $creditCardContainer.show();
-                            $achContainer.hide();
-                        }
-                        else {
-                            $creditCardContainer.hide();
-                            $achContainer.show();
-                        }
                     },
 
                     // this is the callback when the token response comes back. This callback will only happen if all the inputs are valid. To deal with an invalid input response, we have to use timeoutDuraction, timeoutCallback to find that out.
@@ -226,13 +207,13 @@
                     }
                 };
 
-                // temporarily move the inputs off screen to avoid seeing input fields getting created by CollectJS
-                // We can't do any hide/show on the input elements until all the fields are created, otherwise CollectJS will squish/overlap all the input fields.
-                self.$paymentInputs.css({
-                    left: '-9999px',
-                    top: '0px',
-                    position: 'absolute',
-                });
+
+                if (enabledPaymentTypes.includes('card')) {
+                    $achContainer.hide();
+                }
+                else {
+                    $creditCardContainer.hide();
+                }
 
                 try {
                     CollectJS.configure(self.collectJSSettings);

@@ -58,6 +58,11 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Controls\NMIHostedPaymentControl.cs" />
+    <Compile Include="Css.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Css.resx</DependentUpon>
+    </Compile>
     <Compile Include="Gateway.cs" />
     <Compile Include="NMITypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -78,6 +83,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Css.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Css.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Scripts.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Scripts.Designer.cs</LastGenOutput>
@@ -85,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="gatewayCollectJS.js" />
+    <Content Include="gatewayCollect.css" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

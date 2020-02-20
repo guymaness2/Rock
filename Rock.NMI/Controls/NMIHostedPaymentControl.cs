@@ -46,6 +46,7 @@ namespace Rock.NMI.Controls
         private HiddenFieldWithClass _hfSelectedPaymentType;
 
         private HtmlGenericControl _divCreditCardNumber;
+        private HtmlGenericControl _divCreditCardBreak;
         private HtmlGenericControl _divCreditCardExp;
         private HtmlGenericControl _divCreditCardCVV;
         private HtmlGenericControl _divCheckAccountNumber;
@@ -55,6 +56,9 @@ namespace Rock.NMI.Controls
         private HtmlGenericControl _divValidationMessage;
 
         private TextBox _hiddenInputStyleHook;
+
+        private HtmlGenericControl _divInputInvalid;
+        private TextBox _hiddenInputInvalidStyleHook;
 
         private Panel _paymentTypeSelector;
         private Panel _gatewayCreditCardContainer;
@@ -291,19 +295,23 @@ namespace Rock.NMI.Controls
             /* Credit Card Inputs */
             if ( EnabledPaymentTypes.Contains( NMIPaymentType.card ) )
             {
-                _gatewayCreditCardContainer = new Panel() { ID = "_gatewayCreditCardContainer", CssClass = "gateway-creditcard-container js-gateway-creditcard-container" };
+                _gatewayCreditCardContainer = new Panel() { ID = "_gatewayCreditCardContainer", CssClass = "gateway-creditcard-container gateway-payment-container js-gateway-creditcard-container" };
                 pnlPaymentInputs.Controls.Add( _gatewayCreditCardContainer );
 
                 _divCreditCardNumber = new HtmlGenericControl( "div" );
-                _divCreditCardNumber.AddCssClass( "js-credit-card-input credit-card-input" );
+                _divCreditCardNumber.AddCssClass( "js-credit-card-input iframe-input credit-card-input" );
                 _gatewayCreditCardContainer.Controls.Add( _divCreditCardNumber );
 
+                _divCreditCardBreak = new HtmlGenericControl( "div" );
+                _divCreditCardBreak.AddCssClass( "break" );
+                _gatewayCreditCardContainer.Controls.Add( _divCreditCardBreak );
+
                 _divCreditCardExp = new HtmlGenericControl( "div" );
-                _divCreditCardExp.AddCssClass( "js-credit-card-exp-input credit-card-exp-input" );
+                _divCreditCardExp.AddCssClass( "js-credit-card-exp-input iframe-input credit-card-exp-input" );
                 _gatewayCreditCardContainer.Controls.Add( _divCreditCardExp );
 
                 _divCreditCardCVV = new HtmlGenericControl( "div" );
-                _divCreditCardCVV.AddCssClass( "js-credit-card-cvv-input credit-card-cvv-input" );
+                _divCreditCardCVV.AddCssClass( "js-credit-card-cvv-input iframe-input credit-card-cvv-input" );
                 _gatewayCreditCardContainer.Controls.Add( _divCreditCardCVV );
             }
 
@@ -311,19 +319,19 @@ namespace Rock.NMI.Controls
             /* ACH Inputs */
             if ( EnabledPaymentTypes.Contains( NMIPaymentType.ach ) )
             {
-                _gatewayACHContainer = new Panel() { ID = "_gatewayACHContainer", CssClass = "gateway-ach-container js-gateway-ach-container" };
+                _gatewayACHContainer = new Panel() { ID = "_gatewayACHContainer", CssClass = "gateway-ach-container gateway-payment-container js-gateway-ach-container" };
                 pnlPaymentInputs.Controls.Add( _gatewayACHContainer );
 
                 _divCheckAccountNumber = new HtmlGenericControl( "div" );
-                _divCheckAccountNumber.AddCssClass( "js-check-account-number-input check-account-number-input" );
+                _divCheckAccountNumber.AddCssClass( "js-check-account-number-input iframe-input check-account-number-input" );
                 _gatewayACHContainer.Controls.Add( _divCheckAccountNumber );
 
                 _divCheckRoutingNumber = new HtmlGenericControl( "div" );
-                _divCheckRoutingNumber.AddCssClass( "js-check-routing-number-input check-routing-number-input" );
+                _divCheckRoutingNumber.AddCssClass( "js-check-routing-number-input iframe-input check-routing-number-input" );
                 _gatewayACHContainer.Controls.Add( _divCheckRoutingNumber );
 
                 _divCheckFullName = new HtmlGenericControl( "div" );
-                _divCheckFullName.AddCssClass( "js-check-fullname-input check-fullname-input" );
+                _divCheckFullName.AddCssClass( "js-check-fullname-input iframe-input check-fullname-input" );
                 _gatewayACHContainer.Controls.Add( _divCheckFullName );
             }
 
@@ -349,10 +357,14 @@ namespace Rock.NMI.Controls
             _hiddenInputStyleHook.Attributes["class"] = "js-input-style-hook form-control nmi-input-style-hook form-group";
             _hiddenInputStyleHook.Style["display"] = "none";
 
-            // set text so that placeholder css can be jquery'd
-            _hiddenInputStyleHook.Attributes["placeholder"] = "placeholder text hook";
-
             Controls.Add( _hiddenInputStyleHook );
+
+            _divInputInvalid = new HtmlGenericControl( "div" );
+            _divInputInvalid.AddCssClass( "form-group has-error" );
+            _divInputInvalid.InnerHtml =
+@"<input type='text' class='js-input-invalid-style-hook form-control'>";
+            _divInputInvalid.Style["display"] = "none";
+            Controls.Add( _divInputInvalid );
 
             Controls.Add( pnlPaymentInputs );
         }

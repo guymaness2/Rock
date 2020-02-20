@@ -6,6 +6,7 @@
   height: 42px;
   height: calc(var(--input-height-base) + 5px);
   margin-bottom: 10px;
+  padding: 0 3px;
   overflow: hidden;
 }
 .nmi-payment-inputs .iframe-input::before {
@@ -23,15 +24,16 @@
   background: var(--input-bg-disabled);
   border: 1px solid #d8d8d8;
   border-color: var(--input-border);
+  border-radius: var(--input-border-radius);
 }
 .nmi-payment-inputs .iframe-input .CollectJSInlineIframe {
   height: calc(var(--input-height-base) + 5px) !important;
   height: 42px !important;
 }
 .nmi-payment-inputs .break {
-  -webkit-box-flex: 0;
-  -ms-flex: 0 0 0%;
-  flex: 0 0 0%;
+  -webkit-box-flex: 1;
+  -ms-flex: 1 1 100%;
+  flex: 1 1 100%;
 }
 .nmi-payment-inputs .gateway-payment-container {
   display: -ms-flexbox;
@@ -62,18 +64,16 @@
 }
 @media (min-width: 500px) {
   .nmi-payment-inputs .break {
-    -webkit-box-flex: 1;
-    -ms-flex: 1 1 100%;
-    flex: 1 1 100%;
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 0%;
+    flex: 0 0 0%;
   }
-
   .nmi-payment-inputs .check-account-number-input,
   .nmi-payment-inputs .check-routing-number-input {
     -ms-flex: 0 0 50%;
     flex: 0 0 50%;
     max-width: 50%;
   }
-
   .nmi-payment-inputs .credit-card-exp-input,
   .nmi-payment-inputs .credit-card-cvv-input {
     -webkit-box-flex: 0;

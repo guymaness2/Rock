@@ -3032,6 +3032,59 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
+        /// Adds a style tag with the specified styleTagId and css
+        /// </summary>
+        /// <param name="styleTagId">The script identifier.</param>
+        /// <param name="src">The source.</param>
+        public void AddStyleToHead( string styleTagId, string src )
+        {
+            RockPage.AddStyleToHead( this.Page, styleTagId, src );
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId and css
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="styleTagId">The style tag identifier.</param>
+        /// <param name="css">The CSS.</param>
+        public static void AddStyleToHead( Page page, string styleTagId, string css )
+        {
+            AddStyleToHead( page, styleTagId, css, null );
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId, css, and attributes to head (if it doesn't already exist)
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="styleTagId">The style tag identifier.</param>
+        /// <param name="css">The CSS.</param>
+        /// <param name="additionalAttributes">The additional attributes.</param>
+        public static void AddStyleToHead( Page page, string styleTagId, string css, Dictionary<string, string> additionalAttributes )
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                if ( !header.Controls.OfType<Literal>().Any( a => a.ID == styleTagId ) )
+                {
+                    Literal l = new Literal
+                    {
+                        ID = styleTagId
+                    };
+                    StringBuilder sbStyleTagHTML = new StringBuilder();
+                    sbStyleTagHTML.Append( $"<style id='{styleTagId}'" );
+                    string additionalAttributesHtml = additionalAttributes?.Select( a => $"{a.Key}='{a.Value}'" ).ToList().AsDelimited( " " );
+                    if ( additionalAttributesHtml.IsNotNullOrWhiteSpace() )
+                    {
+                        sbStyleTagHTML.Append( $" {additionalAttributesHtml}" );
+                    }
+                    sbStyleTagHTML.Append( $">\n{css}\n</style>" );
+                    l.Text = sbStyleTagHTML.ToString();
+                    header.Controls.Add( l );
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the client's ip address.
         /// </summary>
         /// <returns></returns>

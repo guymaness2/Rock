@@ -228,11 +228,11 @@ namespace Rock.NMI.Controls
 
                             if ( tokenResponse.HasValidationError() )
                             {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse.ValidationMessage;
+                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = FriendlyMessageHelper.GetFriendlyMessage( tokenResponse.ValidationMessage );
                             }
                             else
                             {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken";
+                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = FriendlyMessageHelper.GetFriendlyMessage( tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken" );
                             }
                         }
                         else
@@ -344,13 +344,12 @@ namespace Rock.NMI.Controls
             _aPaymentButton.AddCssClass( "js-payment-button payment-button" );
             pnlPaymentInputs.Controls.Add( _aPaymentButton );
 
+            Controls.Add( pnlPaymentInputs );
+
             _divValidationMessage = new HtmlGenericControl( "div" );
             _divValidationMessage.AddCssClass( "alert alert-validation js-payment-input-validation" );
             _divValidationMessage.InnerHtml =
-@"Please correct the following:
-<ul>
-<li><span class='js-validation-message'></span></li>
-</ul>";
+@"<span class='js-validation-message'></span>";
             this.Controls.Add( _divValidationMessage );
 
             _hiddenInputStyleHook = new TextBox();
@@ -365,10 +364,6 @@ namespace Rock.NMI.Controls
 @"<input type='text' class='js-input-invalid-style-hook form-control'>";
             _divInputInvalid.Style["display"] = "none";
             Controls.Add( _divInputInvalid );
-
-            Controls.Add( pnlPaymentInputs );
         }
-
-
     }
 }

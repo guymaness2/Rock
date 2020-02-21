@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -345,4 +346,217 @@ namespace Rock.NMI
 
 
     /* Get Payments Response */
+
+    // TODO
+
+    /// <summary>
+    /// 
+    /// </summary>
+    internal static class FriendlyMessageHelper
+    {
+        /// <summary>
+        /// Gets the friendly message.
+        /// </summary>
+        /// <param name="apiMessage">The API message.</param>
+        /// <returns></returns>
+        internal static string GetFriendlyMessage( string apiMessage )
+        {
+            if ( apiMessage.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            return FriendlyMessageMap.GetValueOrNull( apiMessage ) ?? apiMessage;
+        }
+
+        /// <summary>
+        /// Gets the result code message.
+        /// </summary>
+        /// <param name="resultCode">The result code.</param>
+        /// <param name="resultText">The result text.</param>
+        /// <returns></returns>
+        internal static string GetResultCodeMessage( int resultCode, string resultText )
+        {
+            switch ( resultCode )
+            {
+                case 100:
+                    {
+                        return "Transaction was approved.";
+                    }
+
+                case 200:
+                    {
+                        return "Transaction was declined by processor.";
+                    }
+
+                case 201:
+                    {
+                        return "Do not honor.";
+                    }
+
+                case 202:
+                    {
+                        return "Insufficient funds.";
+                    }
+
+                case 203:
+                    {
+                        return "Over limit.";
+                    }
+
+                case 204:
+                    {
+                        return "Transaction not allowed.";
+                    }
+
+                case 220:
+                    {
+                        return "Incorrect payment information.";
+                    }
+
+                case 221:
+                    {
+                        return "No such card issuer.";
+                    }
+
+                case 222:
+                    {
+                        return "No card number on file with issuer.";
+                    }
+
+                case 223:
+                    {
+                        return "Expired card.";
+                    }
+
+                case 224:
+                    {
+                        return "Invalid expiration date.";
+                    }
+
+                case 225:
+                    {
+                        return "Invalid card security code.";
+                    }
+
+                case 240:
+                    {
+                        return "Call issuer for further information.";
+                    }
+
+                case 250: // pickup card
+                case 251: // lost card
+                case 252: // stolen card
+                case 253: // fradulent card
+                    {
+                        // these are more sensitive declines so sanitize them a bit but provide a code for later lookup
+                        return string.Format( "This card was declined (code: {0}).", resultCode );
+                    }
+
+                case 260:
+                    {
+                        return string.Format( "Declined with further instructions available. ({0})", resultText );
+                    }
+
+                case 261:
+                    {
+                        return "Declined-Stop all recurring payments.";
+                    }
+
+                case 262:
+                    {
+                        return "Declined-Stop this recurring program.";
+                    }
+
+                case 263:
+                    {
+                        return "Declined-Update cardholder data available.";
+                    }
+
+                case 264:
+                    {
+                        return "Declined-Retry in a few days.";
+                    }
+
+                case 300:
+                    {
+                        return "Transaction was rejected by gateway.";
+                    }
+
+                case 400:
+                    {
+                        return "Transaction error returned by processor.";
+                    }
+
+                case 410:
+                    {
+                        return "Invalid merchant configuration.";
+                    }
+
+                case 411:
+                    {
+                        return "Merchant account is inactive.";
+                    }
+
+                case 420:
+                    {
+                        return "Communication error.";
+                    }
+
+                case 421:
+                    {
+                        return "Communication error with issuer.";
+                    }
+
+                case 430:
+                    {
+                        return "Duplicate transaction at processor.";
+                    }
+
+                case 440:
+                    {
+                        return "Processor format error.";
+                    }
+
+                case 441:
+                    {
+                        return "Invalid transaction information.";
+                    }
+
+                case 460:
+                    {
+                        return "Processor feature not available.";
+                    }
+
+                case 461:
+                    {
+                        return "Unsupported card type.";
+                    }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// The friendly message map
+        /// </summary>
+        private static readonly Dictionary<string, string> FriendlyMessageMap = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+        {
+            // Credit Card related
+            { "Card number must be 13-19 digits and a recognizable card format", "Invalid Credit Card Number" },
+            { "Expiration date must be a present or future month and year", "Invalid Expiration Date" },
+            { "CVV must be 3 or 4 digits", "Invalid CVV" },
+
+            // ACH Related
+            { "Routing number must be 6 or 9 digits and a recognizable format", "Invalid Routing Number" },
+            { "Account owner's name should be at least 3 characters", "Account owner's name should be at least 3 characters" },
+
+            // This seems to happen if entering an invalid ACH Account number ??
+            { "Connection to tokenization service failed", "Invalid Account Number" },
+
+            // Declined
+            { "FAILED", "Declined" },
+            { "DECLINE", "Declined" }
+        };
+    }
 }

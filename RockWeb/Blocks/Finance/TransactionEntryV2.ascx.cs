@@ -2932,6 +2932,7 @@ mission. We are so grateful for your commitment.</p>
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
             nbProcessTransactionError.Visible = false;
+            nbPaymentTokenError.Visible = false;
 
             if ( this.IsScheduledTransaction() )
             {

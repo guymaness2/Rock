@@ -67,6 +67,16 @@
                 self.$paymentButtonCreditCard = $('.js-payment-creditcard', $control);
                 self.$paymentButtonACH = $('.js-payment-ach', $control);
 
+                // tokenResponseSent helps track if we sent a token response back to Rock. Since a validation event could happen 'after' submitting the request, we might have sent the token response back to rock
+                // the timeoutCallback could also sent a token Response back to rock, so we'll check tokenResponseSent to avoid a double postback
+                self.tokenResponseSent = function (sent) {
+                    if (sent) {
+                        $control.data["tokenResponseSent"] = sent;
+                    }
+
+                    return $control.data["tokenResponseSent"];
+                }
+
                 var inputStyles = function (style) {
                     return $('.js-input-style-hook').css(style)
                 };
@@ -172,6 +182,13 @@
                     timeoutDuration: 10000,
                     timeoutCallback: function () {
 
+                        // if got a validation callback aftering submitting a token request, we probably already sent the token response( with a validation message).
+                        // so, if we already sent a token response back (thru a postback), we don't have to deal with timeouts
+                        var tokenResponseSent = self.tokenResponseSent();
+                        if (tokenResponseSent) {
+                            return false;
+                        }
+
                         // a timeout callback will fire due to a timeout or incomplete input fields (CollectJS doesn't tell us why)
                         console.log("The tokenization didn't respond in the expected timeframe. This could be due to an invalid or incomplete field or poor connectivity - " + Date());
 
@@ -213,6 +230,18 @@
                             status: status,
                             message: message
                         };
+
+                        var fieldVisible = $(CollectJS.config.fields[field].selector).is(":visible");
+                        if (!status && CollectJS.inSubmission && fieldVisible) {
+                            // failed validation event while waiting for submission response
+
+                            var tokenResponse = {
+                                token: '',
+                                validationMessage: message
+                            };
+
+                            self.handleTokenResponse(tokenResponse);
+                        }
                     },
 
                     // After we call CollectJS.configure, we have to wait for CollectJS to create all the iframes for the input fields.
@@ -321,10 +350,12 @@
 
             handleTokenResponse: function (tokenResponse) {
                 var self = this;
+
                 self.$responseToken.val(tokenResponse.token);
                 self.$rawResponseToken.val(JSON.stringify(tokenResponse, null, 2));
 
                 if (self.postbackScript) {
+                    self.tokenResponseSent(true);
                     window.location = self.postbackScript;
                 }
             },
@@ -398,6 +429,7 @@
 
             // Tells the gatewayTokenizer to submit the entered info so that we can get a token (or error, etc) in the response
             startSubmitPaymentInfo: function (self, controlId) {
+                self.tokenResponseSent(false);
                 CollectJS.startPaymentRequest();
             }
         }
@@ -405,4 +437,3 @@
         return exports;
     }());
 }(jQuery));
-

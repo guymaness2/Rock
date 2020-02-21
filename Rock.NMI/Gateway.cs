@@ -23,9 +23,10 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web.UI;
-using System.Xml;
 using System.Xml.Linq;
+
 using Newtonsoft.Json;
+
 using RestSharp;
 
 using Rock.Attribute;
@@ -240,8 +241,6 @@ namespace Rock.NMI
             return parameters;
         }
 
-
-
         /// <summary>
         /// Performs the first step of a three-step charge
         /// </summary>
@@ -307,7 +306,7 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
                     return null;
                 }
 
@@ -352,10 +351,9 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    var resultText = result.GetValueOrNull( "result-text" );
-                    errorMessage = resultText;
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
 
-                    string resultCodeMessage = GetResultCodeMessage( result.GetValueOrNull( "result-code" )?.AsInteger() ?? 0, resultText );
+                    string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( result.GetValueOrNull( "result-code" )?.AsInteger() ?? 0, errorMessage );
                     if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                     {
                         errorMessage += string.Format( " ({0})", resultCodeMessage );
@@ -449,7 +447,7 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
                     return null;
                 }
 
@@ -464,7 +462,7 @@ namespace Rock.NMI
 
             return null;
         }
-                
+
         /// <summary>
         /// Performs the first step of adding a new payment schedule
         /// </summary>
@@ -524,7 +522,7 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
                     return null;
                 }
 
@@ -570,7 +568,7 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
                     return null;
                 }
 
@@ -692,7 +690,7 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
                     return false;
                 }
 
@@ -1088,174 +1086,6 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Gets the result code message.
-        /// </summary>
-        /// <param name="resultCode">The result code.</param>
-        /// <param name="resultText">The result text.</param>
-        /// <returns></returns>
-        private string GetResultCodeMessage( int resultCode, string resultText )
-        {
-            switch ( resultCode )
-            {
-                case 100:
-                    {
-                        return "Transaction was approved.";
-                    }
-
-                case 200:
-                    {
-                        return "Transaction was declined by processor.";
-                    }
-
-                case 201:
-                    {
-                        return "Do not honor.";
-                    }
-
-                case 202:
-                    {
-                        return "Insufficient funds.";
-                    }
-
-                case 203:
-                    {
-                        return "Over limit.";
-                    }
-
-                case 204:
-                    {
-                        return "Transaction not allowed.";
-                    }
-
-                case 220:
-                    {
-                        return "Incorrect payment information.";
-                    }
-
-                case 221:
-                    {
-                        return "No such card issuer.";
-                    }
-
-                case 222:
-                    {
-                        return "No card number on file with issuer.";
-                    }
-
-                case 223:
-                    {
-                        return "Expired card.";
-                    }
-
-                case 224:
-                    {
-                        return "Invalid expiration date.";
-                    }
-
-                case 225:
-                    {
-                        return "Invalid card security code.";
-                    }
-
-                case 240:
-                    {
-                        return "Call issuer for further information.";
-                    }
-
-                case 250: // pickup card
-                case 251: // lost card
-                case 252: // stolen card
-                case 253: // fradulent card
-                    {
-                        // these are more sensitive declines so sanitize them a bit but provide a code for later lookup
-                        return string.Format( "This card was declined (code: {0}).", resultCode );
-                    }
-
-                case 260:
-                    {
-                        return string.Format( "Declined with further instructions available. ({0})", resultText );
-                    }
-
-                case 261:
-                    {
-                        return "Declined-Stop all recurring payments.";
-                    }
-
-                case 262:
-                    {
-                        return "Declined-Stop this recurring program.";
-                    }
-
-                case 263:
-                    {
-                        return "Declined-Update cardholder data available.";
-                    }
-
-                case 264:
-                    {
-                        return "Declined-Retry in a few days.";
-                    }
-
-                case 300:
-                    {
-                        return "Transaction was rejected by gateway.";
-                    }
-
-                case 400:
-                    {
-                        return "Transaction error returned by processor.";
-                    }
-
-                case 410:
-                    {
-                        return "Invalid merchant configuration.";
-                    }
-
-                case 411:
-                    {
-                        return "Merchant account is inactive.";
-                    }
-
-                case 420:
-                    {
-                        return "Communication error.";
-                    }
-
-                case 421:
-                    {
-                        return "Communication error with issuer.";
-                    }
-
-                case 430:
-                    {
-                        return "Duplicate transaction at processor.";
-                    }
-
-                case 440:
-                    {
-                        return "Processor format error.";
-                    }
-
-                case 441:
-                    {
-                        return "Invalid transaction information.";
-                    }
-
-                case 460:
-                    {
-                        return "Processor feature not available.";
-                    }
-
-                case 461:
-                    {
-                        return "Unsupported card type.";
-                    }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Gets the response message.
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
@@ -1460,9 +1290,9 @@ namespace Rock.NMI
             // NOTE: When debugging, you might get a Duplicate Transaction error if using the same CustomerVaultId and Amount within a short window ( maybe around 20 minutes? ) 
             if ( chargeResponse.Response != "1" )
             {
-                errorMessage = chargeResponse.ResponseText;
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( chargeResponse.ResponseText );
 
-                string resultCodeMessage = GetResultCodeMessage( chargeResponse.ResponseCode.AsInteger(), chargeResponse.ResponseText );
+                string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( chargeResponse.ResponseCode.AsInteger(), chargeResponse.ResponseText );
                 if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                 {
                     errorMessage += string.Format( " ({0})", resultCodeMessage );
@@ -1526,7 +1356,6 @@ namespace Rock.NMI
             errorMessage = "The Payment Gateway only supports adding scheduled payment using a three-step process.";
             return null;
         }
-
 
         /// <summary>
         /// Gets the customer vault query response.
@@ -1667,7 +1496,6 @@ namespace Rock.NMI
         /// <param name="errorMessage">The error message.</param>
         public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
         {
-
             var nmiHostedPaymentControl = hostedPaymentInfoControl as NMIHostedPaymentControl;
             errorMessage = null;
             var tokenResponse = nmiHostedPaymentControl.PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
@@ -1680,6 +1508,7 @@ namespace Rock.NMI
 
                 errorMessage = tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken";
                 referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( errorMessage );
             }
             else
             {
@@ -1705,13 +1534,13 @@ namespace Rock.NMI
             queryParameters.Add( "payment_token", paymentInfo.ReferenceNumber );
             PopulateAddressParameters( paymentInfo, queryParameters );
 
-            var createCustomerResponse = PostToGatewayDirectPostAPI<CreateCustomerResponse> ( financialGateway, queryParameters );
+            var createCustomerResponse = PostToGatewayDirectPostAPI<CreateCustomerResponse>( financialGateway, queryParameters );
 
             if ( createCustomerResponse.Response != "1" )
             {
-                errorMessage = createCustomerResponse.ResponseText;
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( createCustomerResponse.ResponseText );
 
-                string resultCodeMessage = GetResultCodeMessage( createCustomerResponse.ResponseCode.AsInteger(), createCustomerResponse.ResponseText );
+                string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( createCustomerResponse.ResponseCode.AsInteger(), errorMessage );
                 if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                 {
                     errorMessage += string.Format( " ({0})", resultCodeMessage );
@@ -1723,7 +1552,6 @@ namespace Rock.NMI
 
                 return null;
             }
-
 
             return createCustomerResponse.CustomerVaultId;
         }

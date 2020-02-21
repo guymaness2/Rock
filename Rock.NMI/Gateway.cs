@@ -464,21 +464,7 @@ namespace Rock.NMI
 
             return null;
         }
-
-        /// <summary>
-        /// Adds the scheduled payment.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="schedule">The schedule.</param>
-        /// <param name="paymentInfo">The payment info.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "The Payment Gateway only supports adding scheduled payment using a three-step process.";
-            return null;
-        }
-
+                
         /// <summary>
         /// Performs the first step of adding a new payment schedule
         /// </summary>
@@ -1524,8 +1510,23 @@ namespace Rock.NMI
             transaction.AdditionalLavaFields = chargeResponse.ToJson().FromJsonOrNull<Dictionary<string, object>>();
 
             return transaction;
-
         }
+
+        /// <summary>
+        /// Adds the scheduled payment.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            // TODO
+            errorMessage = "The Payment Gateway only supports adding scheduled payment using a three-step process.";
+            return null;
+        }
+
 
         /// <summary>
         /// Gets the customer vault query response.
@@ -1677,7 +1678,7 @@ namespace Rock.NMI
                     errorMessage = tokenResponse.ValidationMessage;
                 }
 
-                errorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
+                errorMessage = tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken";
                 referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
             }
             else

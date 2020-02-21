@@ -232,7 +232,7 @@ namespace Rock.NMI.Controls
                             }
                             else
                             {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
+                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken";
                             }
                         }
                         else

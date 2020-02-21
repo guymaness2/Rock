@@ -69,14 +69,40 @@ namespace Rock.NMI
         [JsonProperty( "check" )]
         public CheckTokenResponse Check { get; set; }
 
-        /* Not Sure if NMI has this stuff */
-        public bool IsSuccessStatus() => true;
+        /// <summary>
+        /// Determines whether [is success status].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is success status]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSuccessStatus() => ErrorMessage.IsNullOrWhiteSpace() && ValidationMessage.IsNullOrWhiteSpace();
 
-        public bool HasValidationError() => true;
+        /// <summary>
+        /// Determines whether [has validation error].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [has validation error]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasValidationError() => ValidationMessage.IsNotNullOrWhiteSpace();
 
+        /* We added these things since NMI doesn't really do it and we had to do custom stuff in gatewayCollect.js to populate these */
+        /// <summary>
+        /// Gets or sets the validation message.
+        /// </summary>
+        /// <value>
+        /// The validation message.
+        /// </value>
+        [JsonProperty( "validationMessage" )]
         public string ValidationMessage { get; set; }
 
-        public string Message { get; set; }
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        /// <value>
+        /// The error message.
+        /// </value>
+        [JsonProperty( "errorMessage" )]
+        public string ErrorMessage { get; set; }
     }
 
     /// <summary>
@@ -319,7 +345,4 @@ namespace Rock.NMI
 
 
     /* Get Payments Response */
-
-
-
 }

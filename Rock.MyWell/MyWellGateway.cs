@@ -1138,12 +1138,12 @@ namespace Rock.MyWell
 
                 if ( SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate, out errorMessage ) )
                 {
-
                     var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
                     subscriptionId = subscriptionResult.Data?.Id;
 
                     if ( subscriptionId.IsNullOrWhiteSpace() )
                     {
+                        // error from CreateSubscription
                         errorMessage = subscriptionResult.Message;
                         return null;
                     }

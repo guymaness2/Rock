@@ -2590,6 +2590,8 @@ mission. We are so grateful for your commitment.</p>
                 paymentInfo.LastName = tbLastName.Text;
             }
 
+            paymentInfo.FinancialPersonSavedAccountId = ddlPersonSavedAccount.SelectedValueAsId();
+
             // get the payment comment
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "TransactionDateTime", RockDateTime.Now );

@@ -203,6 +203,8 @@ namespace Rock.MyWell
                     payment.CurrencyTypeValue = DefinedValueCache.Get( paymentDetail.CurrencyTypeValueId.Value );
                 }
 
+                payment.GatewayPersonIdentifier = paymentDetail.GatewayPersonIdentifier;
+
                 return payment;
             }
             catch ( Exception e )
@@ -1009,6 +1011,7 @@ namespace Rock.MyWell
             {
                 // since we are using a token for payment, it is possible that the Gateway has a different address associated with the payment method
                 financialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{billingAddressResponse.FirstName} {billingAddressResponse.LastName}" );
+                financialPaymentDetail.GatewayPersonIdentifier = ( paymentInfo as ReferencePaymentInfo )?.GatewayPersonIdentifier;
 
                 // if address wasn't collected when entering the transaction, set the address to the billing info returned from the gateway (if any)
                 if ( paymentInfo.Street1.IsNullOrWhiteSpace() )
@@ -1437,6 +1440,7 @@ namespace Rock.MyWell
                     // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
                     TransactionDateTime = transaction.CreatedDateTimeUTC.Value.ToLocalTime(),
                     GatewayScheduleId = gatewayScheduleId,
+                    GatewayPersonIdentifier = transaction.CustomerId,
 
                     Status = transaction.Status,
                     IsFailure = transaction.IsFailure(),

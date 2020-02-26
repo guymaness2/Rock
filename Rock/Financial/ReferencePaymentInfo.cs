@@ -72,6 +72,14 @@ namespace Rock.Financial
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial person saved account identifier that was used for this payment
+        /// </summary>
+        /// <value>
+        /// The financial person saved account identifier.
+        /// </value>
+        public int? FinancialPersonSavedAccountId { get; set; }
+
+        /// <summary>
         /// Gets the account number.
         /// </summary>
         public override string MaskedNumber

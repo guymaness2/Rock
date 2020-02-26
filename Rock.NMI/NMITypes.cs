@@ -987,6 +987,15 @@ namespace Rock.NMI
         public string Condition { get; set; }
 
         /// <summary>
+        /// Gets or sets the customer identifier.
+        /// </summary>
+        /// <value>
+        /// The customer identifier.
+        /// </value>
+        [JsonProperty( "customerid" )]
+        public string CustomerId { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction action.
         /// </summary>
         /// <value>
@@ -1017,7 +1026,7 @@ namespace Rock.NMI
         public string fax { get; set; }
         public string cell_phone { get; set; }
         public string customertaxid { get; set; }
-        public string customerid { get; set; }
+        
         public string website { get; set; }
         public string shipping_first_name { get; set; }
         public string shipping_last_name { get; set; }

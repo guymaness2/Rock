@@ -387,6 +387,8 @@ namespace Rock.Model
                                 transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = financialPaymentDetail.ExpirationMonthEncrypted;
                                 transaction.FinancialPaymentDetail.ExpirationYearEncrypted = financialPaymentDetail.ExpirationYearEncrypted;
                                 transaction.FinancialPaymentDetail.BillingLocationId = financialPaymentDetail.BillingLocationId;
+                                transaction.FinancialPaymentDetail.GatewayPersonIdentifier = payment.GatewayPersonIdentifier;
+                                transaction.FinancialPaymentDetail.FinancialPersonSavedAccountId = financialPaymentDetail.FinancialPersonSavedAccountId;
                             }
 
                             if ( currencyTypeValue != null )

@@ -369,6 +369,7 @@ namespace Rock.NMI
                 transaction.TransactionCode = result.GetValueOrNull( "transaction-id" );
                 transaction.ForeignKey = result.GetValueOrNull( "customer-vault-id" );
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                transaction.FinancialPaymentDetail.GatewayPersonIdentifier = result.GetValueOrNull( "customer-vault-id" ); ;
 
                 string ccNumber = result.GetValueOrNull( "billing_cc-number" );
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
@@ -578,6 +579,7 @@ namespace Rock.NMI
                 scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = result.GetValueOrNull( "customer-vault-id" );
                 string ccNumber = result.GetValueOrNull( "billing_cc-number" );
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
                 {
@@ -805,6 +807,9 @@ namespace Rock.NMI
                     payment.TransactionCode = transaction.TransactionId;
 
                     payment.GatewayScheduleId = transaction.OriginalTransactionId;
+
+                    // TODO, does this work?
+                    payment.GatewayPersonIdentifier = transaction.CustomerId;
 
                     var statusMessage = new StringBuilder();
                     DateTime? transactionDateTime = null;
@@ -1234,6 +1239,7 @@ namespace Rock.NMI
         private FinancialPaymentDetail PopulatePaymentInfo( Customer customerInfo )
         {
             var financialPaymentDetail = new FinancialPaymentDetail();
+            financialPaymentDetail.GatewayPersonIdentifier = customerInfo.CustomerVaultId;
 
             string ccNumber = customerInfo.CcNumber;
             if ( !string.IsNullOrWhiteSpace( ccNumber ) )

@@ -111,6 +111,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the Gateway Person Identifier.
+        /// This would indicate id the customer vault information on the gateway.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
@@ -213,6 +214,10 @@ namespace Rock.Model
             reference.TransactionCode = this.TransactionCode;
             reference.ReferenceNumber = this.ReferenceNumber;
             reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
+            if ( this.Id > 0 )
+            {
+                reference.FinancialPersonSavedAccountId = this.Id;
+            }
 
             if ( this.FinancialPaymentDetail != null )
             {

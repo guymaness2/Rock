@@ -755,7 +755,7 @@ namespace Rock.Financial
                 {
                     Status = "PreProcessing",
                     StatusMessage = "This transaction is scheduled to be processed in the future",
-                    TransactionCode = _financialPersonSavedAccount.Id.ToStringSafe()
+                    TransactionCode = _financialPersonSavedAccount.Id.ToStringSafe(),
                 };
             }
 
@@ -787,6 +787,8 @@ namespace Rock.Financial
             financialPaymentDetail.ExpirationYearEncrypted = _payment.ExpirationYearEncrypted;
             financialPaymentDetail.CreatedByPersonAliasId = _currentPersonAliasId;
             financialPaymentDetail.ForeignKey = _payment.ForeignKey;
+            financialPaymentDetail.GatewayPersonIdentifier = _financialPersonSavedAccount?.GatewayPersonIdentifier;
+            financialPaymentDetail.FinancialPersonSavedAccountId = _financialPersonSavedAccount?.Id;
 
             if ( _payment.CurrencyTypeValue != null )
             {

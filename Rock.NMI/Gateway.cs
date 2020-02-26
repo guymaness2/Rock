@@ -369,7 +369,7 @@ namespace Rock.NMI
                 transaction.TransactionCode = result.GetValueOrNull( "transaction-id" );
                 transaction.ForeignKey = result.GetValueOrNull( "customer-vault-id" );
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-                transaction.FinancialPaymentDetail.GatewayPersonIdentifier = result.GetValueOrNull( "customer-vault-id" ); ;
+                transaction.FinancialPaymentDetail.GatewayPersonIdentifier = result.GetValueOrNull( "customer-vault-id" );
 
                 string ccNumber = result.GetValueOrNull( "billing_cc-number" );
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
@@ -701,7 +701,7 @@ namespace Rock.NMI
                     var subscriptionNode = xdocResult.Root.Element( "subscription" );
                     if ( subscriptionNode == null )
                     {
-                        errorMessage = "unable to get subscription node";
+                        errorMessage = "subscription not found";
                         return false;
                     }
 
@@ -1426,7 +1426,7 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool ReactivateScheduledPaymentSupported
         {
-            get { return false; }
+            get { return true; }
         }
 
         /// <summary>
@@ -1437,8 +1437,12 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
-            errorMessage = "The payment gateway associated with this scheduled transaction (NMI) does not support reactivating scheduled transactions. A new scheduled transaction should be created instead.";
-            return false;
+            var referencePaymentInfo = new ReferencePaymentInfo();
+            referencePaymentInfo.GatewayPersonIdentifier = transaction.FinancialPaymentDetail.GatewayPersonIdentifier;
+            referencePaymentInfo.FinancialPersonSavedAccountId = transaction.FinancialPaymentDetail.FinancialPersonSavedAccountId;
+            referencePaymentInfo.Amount = transaction.TotalAmount;
+
+            return UpdateScheduledPayment( transaction, referencePaymentInfo, out errorMessage );
         }
 
         /// <summary>
@@ -1451,7 +1455,7 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Updates the scheduled payment.
+        /// Updates the scheduled payment. In the case of NMI, the scheduled payment will get deleted and a new one created to replace it.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <param name="paymentInfo">The payment info.</param>
@@ -1478,7 +1482,8 @@ namespace Rock.NMI
 
             if ( referencedPaymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
             {
-                // if this scheduled transaction was created without a customerId (from previous version), create a new customer vault record
+                // if this scheduled transaction was created without saving the customerId to Rock data (from previous version) or unknown to Rock for some other reason, create a new customer vault record.
+                // Note: NMI doesn't support getting the CustomerVaultId from an existing subscription, but we get around that by create a new customer vault id from the existing transaction
                 referencedPaymentInfo.GatewayPersonIdentifier = CreateCustomerVaultFromExistingScheduledTransaction( financialGateway, referencedPaymentInfo, scheduledTransaction, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() )
                 {
@@ -1756,6 +1761,7 @@ namespace Rock.NMI
         /// <returns></returns>
         private string CreateCustomerVaultFromExistingScheduledTransaction( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, FinancialScheduledTransaction financialScheduledTransaction, out string errorMessage )
         {
+            // NOTE that *does* work even if the GatewayScheduleId is from a deleted subscription. NMI just soft-deletes subscriptions, and can get the customer vault from those too.
             paymentInfo.TransactionCode = financialScheduledTransaction.GatewayScheduleId;
             return CreateCustomerVault( financialGateway, paymentInfo, out errorMessage );
         }

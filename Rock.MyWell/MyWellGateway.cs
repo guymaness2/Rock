@@ -1492,10 +1492,8 @@ namespace Rock.MyWell
         /// <returns></returns>
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
-            // MyWell Gateway uses either a MyWellGateway CustomerId for this, which is stored in FinancialPersonSavedAccount.GatewayPersonIdentifier, not a previously processed transaction
-            // Note: GatewayPersonIdentifer comes from CreateCustomerAccount
             errorMessage = string.Empty;
-            return string.Empty;
+            return transaction?.FinancialPaymentDetail?.GatewayPersonIdentifier;
         }
 
         /// <summary>
@@ -1506,10 +1504,8 @@ namespace Rock.MyWell
         /// <returns></returns>
         public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
         {
-            // we can figure out the customerId from scheduledTransaction.TransactionCode since
-            // that is what our implementation of MyWellGateway stores customerId (see AddScheduledPayment)
-            errorMessage = null;
-            return scheduledTransaction.TransactionCode;
+            errorMessage = string.Empty;
+            return scheduledTransaction?.FinancialPaymentDetail?.GatewayPersonIdentifier ?? scheduledTransaction.TransactionCode;
         }
 
         #endregion GatewayComponent implementation

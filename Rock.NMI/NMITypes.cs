@@ -1026,7 +1026,7 @@ namespace Rock.NMI
         public string fax { get; set; }
         public string cell_phone { get; set; }
         public string customertaxid { get; set; }
-        
+
         public string website { get; set; }
         public string shipping_first_name { get; set; }
         public string shipping_last_name { get; set; }
@@ -1220,7 +1220,18 @@ namespace Rock.NMI
                 return string.Empty;
             }
 
-            return FriendlyMessageMap.GetValueOrNull( apiMessage ) ?? apiMessage;
+            var friendlyMessage = FriendlyMessageMap.GetValueOrNull( apiMessage );
+
+            if ( friendlyMessage.IsNullOrWhiteSpace() )
+            {
+                // This can happen if using the same card number and amount within a short window ( maybe around 20 minutes? )
+                if ( apiMessage.StartsWith( "Duplicate transaction REFID:" ) )
+                {
+                    friendlyMessage = "Duplicate transaction detected";
+                }
+            }
+
+            return friendlyMessage ?? apiMessage;
         }
 
         /// <summary>
@@ -1398,12 +1409,20 @@ namespace Rock.NMI
         {
             // Credit Card related
             { "Card number must be 13-19 digits and a recognizable card format", "Invalid Credit Card Number" },
+            { "ccnumber is empty", "Invalid Credit Card Number" },
+
             { "Expiration date must be a present or future month and year", "Invalid Expiration Date" },
+            { "ccexp is empty", "Invalid Expiration Date" },
+
             { "CVV must be 3 or 4 digits", "Invalid CVV" },
+            { "cvv is empty", "Invalid CVV" },
 
             // ACH Related
             { "Routing number must be 6 or 9 digits and a recognizable format", "Invalid Routing Number" },
             { "Account owner's name should be at least 3 characters", "Account owner's name should be at least 3 characters" },
+            { "checkaba is empty", "Invalid Routing Number" },
+            { "checkaccount is empty", "Invalid Account Number" },
+            { "checkname is empty", "Invalid Name on Account" },
 
             // This seems to happen if entering an invalid ACH Account number ??
             { "Connection to tokenization service failed", "Invalid Account Number" },

@@ -70,7 +70,7 @@
                 // tokenResponseSent helps track if we sent a token response back to Rock. Since a validation event could happen 'after' submitting the request, we might have sent the token response back to rock
                 // the timeoutCallback could also sent a token Response back to rock, so we'll check tokenResponseSent to avoid a double postback
                 self.tokenResponseSent = function (sent) {
-                    if (sent) {
+                    if ((typeof sent) === 'boolean') {
                         $control.data["tokenResponseSent"] = sent;
                     }
 
@@ -225,6 +225,10 @@
                     validationCallback: function (field, status, message) {
                         // if there is a validation error, keep the message and field that has the error. Then we'll check it before doing the submitPaymentInfo
 
+                        if (message == 'Field is empty') {
+                            message = field + ' is empty';
+                        }
+
                         self.validationFieldStatus[field] = {
                             field: field,
                             status: status,
@@ -240,7 +244,15 @@
                                 validationMessage: message
                             };
 
-                            self.handleTokenResponse(tokenResponse);
+                            // tokenResponseSent helps track if we sent a token response back to Rock. Since multiple validation events could happen 'after' submitting the request, we might have sent the token response back to rock
+                            var tokenResponseSent = self.tokenResponseSent();
+                            if (tokenResponseSent) {
+                                // if we already sent a tokenResponse, there is no need to
+                                return false;
+                            }
+                            else {
+                                self.handleTokenResponse(tokenResponse);
+                            }
                         }
                     },
 

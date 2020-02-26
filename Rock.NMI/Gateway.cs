@@ -877,7 +877,15 @@ namespace Rock.NMI
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return transaction.ForeignKey;
+            var customerVaultId = transaction?.FinancialPaymentDetail?.GatewayPersonIdentifier;
+
+            if (customerVaultId.IsNullOrWhiteSpace())
+            {
+                // older implementations of the NMI gateway only stored the customer vault id in transaction.ForeignKey
+                customerVaultId = transaction.ForeignKey;
+            }
+
+            return customerVaultId;
         }
 
         /// <summary>
@@ -889,7 +897,15 @@ namespace Rock.NMI
         public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return string.Empty;
+            var customerVaultId = scheduledTransaction?.FinancialPaymentDetail?.GatewayPersonIdentifier;
+
+            if ( customerVaultId.IsNullOrWhiteSpace() )
+            {
+                // older implementations of the NMI gateway might have stored the customer vault id in transaction.ForeignKey
+                customerVaultId = scheduledTransaction.ForeignKey;
+            }
+
+            return customerVaultId;
         }
 
         /// <summary>

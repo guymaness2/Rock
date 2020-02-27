@@ -838,75 +838,317 @@ namespace Rock.NMI
         [JsonProperty( "order_description" )]
         public string OrderDescription { get; set; }
 
-        public string completed_payments { get; set; }
+        /// <summary>
+        /// Gets or sets the plan.
+        /// </summary>
+        /// <value>
+        /// The plan.
+        /// </value>
+        [JsonProperty( "plan" )]
+        public SubscriptionPlan Plan { get; set; }
 
-        public string attempted_payments { get; set; }
+        /// <summary>
+        /// Gets or sets the completed payments.
+        /// </summary>
+        /// <value>
+        /// The completed payments.
+        /// </value>
+        [JsonProperty( "completed_payments" )]
+        public int? CompletedPayments { get; set; }
 
-        public string remaining_payments { get; set; }
+        /// <summary>
+        /// Gets or sets the attempted payments.
+        /// </summary>
+        /// <value>
+        /// The attempted payments.
+        /// </value>
+        [JsonProperty( "attempted_payments" )]
+        public int? AttemptedPayments { get; set; }
 
-        public string ponumber { get; set; }
+        /// <summary>
+        /// Gets or sets the remaining payments.
+        /// </summary>
+        /// <value>
+        /// The remaining payments.
+        /// </value>
+        [JsonProperty( "remaining_payments" )]
+        public string RemainingPayments { get; set; }
 
-        public string orderid { get; set; }
+        /// <summary>
+        /// Gets or sets the ponumber.
+        /// </summary>
+        /// <value>
+        /// The ponumber.
+        /// </value>
+        [JsonProperty( "ponumber" )]
+        public string Ponumber { get; set; }
 
-        public string shipping { get; set; }
+        /// <summary>
+        /// Gets or sets the orderid.
+        /// </summary>
+        /// <value>
+        /// The orderid.
+        /// </value>
+        [JsonProperty( "orderid" )]
+        public string Orderid { get; set; }
 
-        public string tax { get; set; }
+        /// <summary>
+        /// Gets or sets the shipping.
+        /// </summary>
+        /// <value>
+        /// The shipping.
+        /// </value>
+        [JsonProperty( "shipping" )]
+        public string Shipping { get; set; }
 
-        public string first_name { get; set; }
+        /// <summary>
+        /// Gets or sets the tax.
+        /// </summary>
+        /// <value>
+        /// The tax.
+        /// </value>
+        [JsonProperty( "tax" )]
+        public string Tax { get; set; }
 
-        public string last_name { get; set; }
+        /// <summary>
+        /// Gets or sets the first name.
+        /// </summary>
+        /// <value>
+        /// The first name.
+        /// </value>
+        [JsonProperty( "first_name" )]
+        public string FirstName { get; set; }
 
-        public string address_1 { get; set; }
+        /// <summary>
+        /// Gets or sets the last name.
+        /// </summary>
+        /// <value>
+        /// The last name.
+        /// </value>
+        [JsonProperty( "last_name" )]
+        public string LastName { get; set; }
 
-        public string address_2 { get; set; }
+        /// <summary>
+        /// Gets or sets the address1.
+        /// </summary>
+        /// <value>
+        /// The address1.
+        /// </value>
+        [JsonProperty( "address_1" )]
+        public string Address1 { get; set; }
 
-        public string company { get; set; }
+        /// <summary>
+        /// Gets or sets the address2.
+        /// </summary>
+        /// <value>
+        /// The address2.
+        /// </value>
+        [JsonProperty( "address_2" )]
+        public string Address2 { get; set; }
 
-        public string city { get; set; }
+        /// <summary>
+        /// Gets or sets the company.
+        /// </summary>
+        /// <value>
+        /// The company.
+        /// </value>
+        [JsonProperty( "company" )]
+        public string Company { get; set; }
 
-        public string state { get; set; }
+        /// <summary>
+        /// Gets or sets the city.
+        /// </summary>
+        /// <value>
+        /// The city.
+        /// </value>
+        [JsonProperty( "city" )]
+        public string City { get; set; }
 
-        public string postal_code { get; set; }
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        /// <value>
+        /// The state.
+        /// </value>
+        [JsonProperty( "state" )]
+        public string State { get; set; }
 
-        public string country { get; set; }
+        /// <summary>
+        /// Gets or sets the postal code.
+        /// </summary>
+        /// <value>
+        /// The postal code.
+        /// </value>
+        [JsonProperty( "postal_code" )]
+        public string PostalCode { get; set; }
 
-        public string email { get; set; }
+        /// <summary>
+        /// Gets or sets the country.
+        /// </summary>
+        /// <value>
+        /// The country.
+        /// </value>
+        [JsonProperty( "country" )]
+        public string Country { get; set; }
 
-        public string phone { get; set; }
+        /// <summary>
+        /// Gets or sets the email.
+        /// </summary>
+        /// <value>
+        /// The email.
+        /// </value>
+        [JsonProperty( "email" )]
+        public string Email { get; set; }
 
-        public string fax { get; set; }
+        /// <summary>
+        /// Gets or sets the phone.
+        /// </summary>
+        /// <value>
+        /// The phone.
+        /// </value>
+        [JsonProperty( "phone" )]
+        public string Phone { get; set; }
 
-        public string cell_phone { get; set; }
+        /// <summary>
+        /// Gets or sets the fax.
+        /// </summary>
+        /// <value>
+        /// The fax.
+        /// </value>
+        [JsonProperty( "fax" )]
+        public string Fax { get; set; }
 
-        public string customertaxid { get; set; }
+        /// <summary>
+        /// Gets or sets the cell phone.
+        /// </summary>
+        /// <value>
+        /// The cell phone.
+        /// </value>
+        [JsonProperty( "cell_phone" )]
+        public string CellPhone { get; set; }
 
-        public string website { get; set; }
+        /// <summary>
+        /// Gets or sets the customertaxid.
+        /// </summary>
+        /// <value>
+        /// The customertaxid.
+        /// </value>
+        [JsonProperty( "customertaxid" )]
+        public string CustomerTaxId { get; set; }
 
-        public string check_account { get; set; }
+        /// <summary>
+        /// Gets or sets the website.
+        /// </summary>
+        /// <value>
+        /// The website.
+        /// </value>
+        [JsonProperty( "website" )]
+        public string Website { get; set; }
 
-        public string check_hash { get; set; }
+        /// <summary>
+        /// Gets or sets the cc number.
+        /// </summary>
+        /// <value>
+        /// The cc number.
+        /// </value>
+        [JsonProperty( "cc_number" )]
+        public string CcNumber { get; set; }
 
-        public string check_aba { get; set; }
+        /// <summary>
+        /// Gets or sets the cc hash.
+        /// </summary>
+        /// <value>
+        /// The cc hash.
+        /// </value>
+        [JsonProperty( "cc_hash" )]
+        public string CcHash { get; set; }
 
-        public string check_name { get; set; }
+        /// <summary>
+        /// Gets or sets the cc exp.
+        /// </summary>
+        /// <value>
+        /// The cc exp.
+        /// </value>
+        [JsonProperty( "cc_exp" )]
+        public string CcExp { get; set; }
 
-        public string account_holder { get; set; }
+        /// <summary>
+        /// Gets or sets the cc start date.
+        /// </summary>
+        /// <value>
+        /// The cc start date.
+        /// </value>
+        [JsonProperty( "cc_start_date" )]
+        public string CcStartDate { get; set; }
 
-        public string account_type { get; set; }
+        /// <summary>
+        /// Gets or sets the cc issue number.
+        /// </summary>
+        /// <value>
+        /// The cc issue number.
+        /// </value>
+        [JsonProperty( "cc_issue_number" )]
+        public string CcIssueNumber { get; set; }
 
-        public string processor_id { get; set; }
+        /// <summary>
+        /// Gets or sets the cc bin.
+        /// </summary>
+        /// <value>
+        /// The cc bin.
+        /// </value>
+        [JsonProperty( "cc_bin" )]
+        public string CcBin { get; set; }
+    }
 
-        public string cc_number { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SubscriptionPlan
+    {
+        /// <summary>
+        /// Gets or sets the plan identifier.
+        /// </summary>
+        /// <value>
+        /// The plan identifier.
+        /// </value>
+        [JsonProperty( "plan_id" )]
+        public string PlanId { get; set; }
 
-        public string cc_hash { get; set; }
+        /// <summary>
+        /// Gets or sets the name of the plan.
+        /// </summary>
+        /// <value>
+        /// The name of the plan.
+        /// </value>
+        [JsonProperty( "plan_name" )]
+        public string PlanName { get; set; }
 
-        public string cc_exp { get; set; }
+        /// <summary>
+        /// Gets or sets the plan amount.
+        /// </summary>
+        /// <value>
+        /// The plan amount.
+        /// </value>
+        [JsonProperty( "plan_amount" )]
+        public string PlanAmount { get; set; }
 
-        public string cc_start_date { get; set; }
+        /// <summary>
+        /// Gets or sets the plan payments.
+        /// </summary>
+        /// <value>
+        /// The plan payments.
+        /// </value>
+        [JsonProperty( "plan_payments" )]
+        public string PlanPayments { get; set; }
 
-        public string cc_issue_number { get; set; }
-
-        public string cc_bin { get; set; }
+        /// <summary>
+        /// Gets or sets the day frequency.
+        /// </summary>
+        /// <value>
+        /// The day frequency.
+        /// </value>
+        [JsonProperty( "day_frequency" )]
+        public string DayFrequency { get; set; }
     }
 
     /* Get Payments Response */
@@ -1004,81 +1246,671 @@ namespace Rock.NMI
         [JsonProperty( "action" )]
         public TransactionAction TransactionAction { get; set; }
 
-        public string partial_payment_id { get; set; }
-        public string partial_payment_balance { get; set; }
-        public string platform_id { get; set; }
-        public string transaction_type { get; set; }
-        public string order_id { get; set; }
-        public string authorization_code { get; set; }
-        public string ponumber { get; set; }
-        public string order_description { get; set; }
-        public string first_name { get; set; }
-        public string last_name { get; set; }
-        public string address_1 { get; set; }
-        public string address_2 { get; set; }
-        public string company { get; set; }
-        public string city { get; set; }
-        public string state { get; set; }
-        public string postal_code { get; set; }
-        public string country { get; set; }
-        public string email { get; set; }
-        public string phone { get; set; }
-        public string fax { get; set; }
-        public string cell_phone { get; set; }
-        public string customertaxid { get; set; }
+        /// <summary>
+        /// Gets or sets the partial payment identifier.
+        /// </summary>
+        /// <value>
+        /// The partial payment identifier.
+        /// </value>
+        [JsonProperty( "partial_payment_id" )]
+        public string PartialPaymentId { get; set; }
 
-        public string website { get; set; }
-        public string shipping_first_name { get; set; }
-        public string shipping_last_name { get; set; }
-        public string shipping_address_1 { get; set; }
-        public string shipping_address_2 { get; set; }
-        public string shipping_company { get; set; }
-        public string shipping_city { get; set; }
-        public string shipping_state { get; set; }
-        public string shipping_postal_code { get; set; }
-        public string shipping_country { get; set; }
-        public string shipping_email { get; set; }
-        public string shipping_carrier { get; set; }
-        public string tracking_number { get; set; }
-        public string shipping_date { get; set; }
-        public string shipping { get; set; }
-        public string shipping_phone { get; set; }
-        public string cc_number { get; set; }
-        public string cc_hash { get; set; }
-        public string cc_exp { get; set; }
-        public string cavv { get; set; }
-        public string cavv_result { get; set; }
-        public string xid { get; set; }
-        public string eci { get; set; }
-        public string directory_server_id { get; set; }
-        public string three_ds_version { get; set; }
-        public string avs_response { get; set; }
-        public string csc_response { get; set; }
-        public string cardholder_auth { get; set; }
-        public string cc_start_date { get; set; }
-        public string cc_issue_number { get; set; }
-        public string check_account { get; set; }
-        public string check_hash { get; set; }
-        public string check_aba { get; set; }
-        public string check_name { get; set; }
-        public string account_holder_type { get; set; }
-        public string account_type { get; set; }
-        public string sec_code { get; set; }
-        public string drivers_license_number { get; set; }
-        public string drivers_license_state { get; set; }
-        public string drivers_license_dob { get; set; }
-        public string social_security_number { get; set; }
-        public string processor_id { get; set; }
-        public string tax { get; set; }
-        public string currency { get; set; }
-        public string surcharge { get; set; }
-        public string tip { get; set; }
-        public string card_balance { get; set; }
-        public string card_available_balance { get; set; }
-        public string entry_mode { get; set; }
-        public string cc_bin { get; set; }
-        public string cc_type { get; set; }
-        public string signature_image { get; set; }
+        /// <summary>
+        /// Gets or sets the partial payment balance.
+        /// </summary>
+        /// <value>
+        /// The partial payment balance.
+        /// </value>
+        [JsonProperty( "partial_payment_balance" )]
+        public string PartialPaymentBalance { get; set; }
+
+        /// <summary>
+        /// Gets or sets the platform identifier.
+        /// </summary>
+        /// <value>
+        /// The platform identifier.
+        /// </value>
+        [JsonProperty( "platform_id" )]
+        public string PlatformId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the transaction.
+        /// </summary>
+        /// <value>
+        /// The type of the transaction.
+        /// </value>
+        [JsonProperty( "transaction_type" )]
+        public string TransactionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order identifier.
+        /// </summary>
+        /// <value>
+        /// The order identifier.
+        /// </value>
+        [JsonProperty( "order_id" )]
+        public string OrderId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorization code.
+        /// </summary>
+        /// <value>
+        /// The authorization code.
+        /// </value>
+        [JsonProperty( "authorization_code" )]
+        public string AuthorizationCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ponumber.
+        /// </summary>
+        /// <value>
+        /// The ponumber.
+        /// </value>
+        [JsonProperty( "ponumber" )]
+        public string Ponumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order description.
+        /// </summary>
+        /// <value>
+        /// The order description.
+        /// </value>
+        [JsonProperty( "order_description" )]
+        public string OrderDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first name.
+        /// </summary>
+        /// <value>
+        /// The first name.
+        /// </value>
+        [JsonProperty( "first_name" )]
+        public string FirstName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last name.
+        /// </summary>
+        /// <value>
+        /// The last name.
+        /// </value>
+        [JsonProperty( "last_name" )]
+        public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the address1.
+        /// </summary>
+        /// <value>
+        /// The address1.
+        /// </value>
+        [JsonProperty( "address_1" )]
+        public string Address1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the address2.
+        /// </summary>
+        /// <value>
+        /// The address2.
+        /// </value>
+        [JsonProperty( "address_2" )]
+        public string Address2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the company.
+        /// </summary>
+        /// <value>
+        /// The company.
+        /// </value>
+        [JsonProperty( "company" )]
+        public string Company { get; set; }
+
+        /// <summary>
+        /// Gets or sets the city.
+        /// </summary>
+        /// <value>
+        /// The city.
+        /// </value>
+        [JsonProperty( "city" )]
+        public string City { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        /// <value>
+        /// The state.
+        /// </value>
+        [JsonProperty( "state" )]
+        public string State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the postal code.
+        /// </summary>
+        /// <value>
+        /// The postal code.
+        /// </value>
+        [JsonProperty( "postal_code" )]
+        public string PostalCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the country.
+        /// </summary>
+        /// <value>
+        /// The country.
+        /// </value>
+        [JsonProperty( "country" )]
+        public string Country { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email.
+        /// </summary>
+        /// <value>
+        /// The email.
+        /// </value>
+        [JsonProperty( "email" )]
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone.
+        /// </summary>
+        /// <value>
+        /// The phone.
+        /// </value>
+        [JsonProperty( "phone" )]
+        public string Phone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fax.
+        /// </summary>
+        /// <value>
+        /// The fax.
+        /// </value>
+        [JsonProperty( "fax" )]
+        public string Fax { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cell phone.
+        /// </summary>
+        /// <value>
+        /// The cell phone.
+        /// </value>
+        [JsonProperty( "cell_phone" )]
+        public string CellPhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the customertaxid.
+        /// </summary>
+        /// <value>
+        /// The customertaxid.
+        /// </value>
+        [JsonProperty( "customertaxid" )]
+        public string Customertaxid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the website.
+        /// </summary>
+        /// <value>
+        /// The website.
+        /// </value>
+        [JsonProperty( "website" )]
+        public string Website { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first name of the shipping.
+        /// </summary>
+        /// <value>
+        /// The first name of the shipping.
+        /// </value>
+        [JsonProperty( "shipping_first_name" )]
+        public string ShippingFirstName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last name of the shipping.
+        /// </summary>
+        /// <value>
+        /// The last name of the shipping.
+        /// </value>
+        [JsonProperty( "shipping_last_name" )]
+        public string ShippingLastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping address1.
+        /// </summary>
+        /// <value>
+        /// The shipping address1.
+        /// </value>
+        [JsonProperty( "shipping_address_1" )]
+        public string ShippingAddress1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping address2.
+        /// </summary>
+        /// <value>
+        /// The shipping address2.
+        /// </value>
+        [JsonProperty( "shipping_address_2" )]
+        public string ShippingAddress2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping company.
+        /// </summary>
+        /// <value>
+        /// The shipping company.
+        /// </value>
+        [JsonProperty( "shipping_company" )]
+        public string ShippingCompany { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping city.
+        /// </summary>
+        /// <value>
+        /// The shipping city.
+        /// </value>
+        [JsonProperty( "shipping_city" )]
+        public string ShippingCity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state of the shipping.
+        /// </summary>
+        /// <value>
+        /// The state of the shipping.
+        /// </value>
+        [JsonProperty( "shipping_state" )]
+        public string ShippingState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping postal code.
+        /// </summary>
+        /// <value>
+        /// The shipping postal code.
+        /// </value>
+        [JsonProperty( "shipping_postal_code" )]
+        public string ShippingPostalCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping country.
+        /// </summary>
+        /// <value>
+        /// The shipping country.
+        /// </value>
+        [JsonProperty( "shipping_country" )]
+        public string ShippingCountry { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping email.
+        /// </summary>
+        /// <value>
+        /// The shipping email.
+        /// </value>
+        [JsonProperty( "shipping_email" )]
+        public string ShippingEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping carrier.
+        /// </summary>
+        /// <value>
+        /// The shipping carrier.
+        /// </value>
+        [JsonProperty( "shipping_carrier" )]
+        public string ShippingCarrier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tracking number.
+        /// </summary>
+        /// <value>
+        /// The tracking number.
+        /// </value>
+        [JsonProperty( "tracking_number" )]
+        public string TrackingNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping date.
+        /// </summary>
+        /// <value>
+        /// The shipping date.
+        /// </value>
+        [JsonProperty( "shipping_date" )]
+        public string ShippingDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping.
+        /// </summary>
+        /// <value>
+        /// The shipping.
+        /// </value>
+        [JsonProperty( "shipping" )]
+        public string Shipping { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping phone.
+        /// </summary>
+        /// <value>
+        /// The shipping phone.
+        /// </value>
+        [JsonProperty( "shipping_phone" )]
+        public string ShippingPhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc number.
+        /// </summary>
+        /// <value>
+        /// The cc number.
+        /// </value>
+        [JsonProperty( "cc_number" )]
+        public string CcNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc hash.
+        /// </summary>
+        /// <value>
+        /// The cc hash.
+        /// </value>
+        [JsonProperty( "cc_hash" )]
+        public string CcHash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc exp.
+        /// </summary>
+        /// <value>
+        /// The cc exp.
+        /// </value>
+        [JsonProperty( "cc_exp" )]
+        public string CcExp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cavv.
+        /// </summary>
+        /// <value>
+        /// The cavv.
+        /// </value>
+        [JsonProperty( "cavv" )]
+        public string Cavv { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cavv result.
+        /// </summary>
+        /// <value>
+        /// The cavv result.
+        /// </value>
+        [JsonProperty( "cavv_result" )]
+        public string CavvResult { get; set; }
+
+        /// <summary>
+        /// Gets or sets the xid.
+        /// </summary>
+        /// <value>
+        /// The xid.
+        /// </value>
+        [JsonProperty( "xid" )]
+        public string Xid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the eci.
+        /// </summary>
+        /// <value>
+        /// The eci.
+        /// </value>
+        [JsonProperty( "eci" )]
+        public string Eci { get; set; }
+
+        /// <summary>
+        /// Gets or sets the directory server identifier.
+        /// </summary>
+        /// <value>
+        /// The directory server identifier.
+        /// </value>
+        [JsonProperty( "directory_server_id" )]
+        public string DirectoryServerId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the three ds version.
+        /// </summary>
+        /// <value>
+        /// The three ds version.
+        /// </value>
+        [JsonProperty( "three_ds_version" )]
+        public string ThreeDsVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the avs response.
+        /// </summary>
+        /// <value>
+        /// The avs response.
+        /// </value>
+        [JsonProperty( "avs_response" )]
+        public string AvsResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSC response.
+        /// </summary>
+        /// <value>
+        /// The CSC response.
+        /// </value>
+        [JsonProperty( "csc_response" )]
+        public string CscResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cardholder authentication.
+        /// </summary>
+        /// <value>
+        /// The cardholder authentication.
+        /// </value>
+        [JsonProperty( "cardholder_auth" )]
+        public string CardholderAuth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc start date.
+        /// </summary>
+        /// <value>
+        /// The cc start date.
+        /// </value>
+        [JsonProperty( "cc_start_date" )]
+        public string CcStartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc issue number.
+        /// </summary>
+        /// <value>
+        /// The cc issue number.
+        /// </value>
+        [JsonProperty( "cc_issue_number" )]
+        public string CcIssueNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check account.
+        /// </summary>
+        /// <value>
+        /// The check account.
+        /// </value>
+        [JsonProperty( "check_account" )]
+        public string CheckAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check hash.
+        /// </summary>
+        /// <value>
+        /// The check hash.
+        /// </value>
+        [JsonProperty( "check_hash" )]
+        public string CheckHash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check aba.
+        /// </summary>
+        /// <value>
+        /// The check aba.
+        /// </value>
+        [JsonProperty( "check_aba" )]
+        public string CheckAba { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the check.
+        /// </summary>
+        /// <value>
+        /// The name of the check.
+        /// </value>
+        [JsonProperty( "check_name" )]
+        public string CheckName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the account holder.
+        /// </summary>
+        /// <value>
+        /// The type of the account holder.
+        /// </value>
+        [JsonProperty( "account_holder_type" )]
+        public string AccountHolderType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the account.
+        /// </summary>
+        /// <value>
+        /// The type of the account.
+        /// </value>
+        [JsonProperty( "account_type" )]
+        public string AccountType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sec code.
+        /// </summary>
+        /// <value>
+        /// The sec code.
+        /// </value>
+        [JsonProperty( "sec_code" )]
+        public string SecCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the drivers license number.
+        /// </summary>
+        /// <value>
+        /// The drivers license number.
+        /// </value>
+        [JsonProperty( "drivers_license_number" )]
+        public string DriversLicenseNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state of the drivers license.
+        /// </summary>
+        /// <value>
+        /// The state of the drivers license.
+        /// </value>
+        [JsonProperty( "drivers_license_state" )]
+        public string DriversLicenseState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the drivers license dob.
+        /// </summary>
+        /// <value>
+        /// The drivers license dob.
+        /// </value>
+        [JsonProperty( "drivers_license_dob" )]
+        public string DriversLicenseDob { get; set; }
+
+        /// <summary>
+        /// Gets or sets the social security number.
+        /// </summary>
+        /// <value>
+        /// The social security number.
+        /// </value>
+        [JsonProperty( "social_security_number" )]
+        public string SocialSecurityNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the processor identifier.
+        /// </summary>
+        /// <value>
+        /// The processor identifier.
+        /// </value>
+        [JsonProperty( "processor_id" )]
+        public string ProcessorId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tax.
+        /// </summary>
+        /// <value>
+        /// The tax.
+        /// </value>
+        [JsonProperty( "tax" )]
+        public string Tax { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency.
+        /// </summary>
+        /// <value>
+        /// The currency.
+        /// </value>
+        [JsonProperty( "currency" )]
+        public string Currency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the surcharge.
+        /// </summary>
+        /// <value>
+        /// The surcharge.
+        /// </value>
+        [JsonProperty( "surcharge" )]
+        public string Surcharge { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tip.
+        /// </summary>
+        /// <value>
+        /// The tip.
+        /// </value>
+        [JsonProperty( "tip" )]
+        public string Tip { get; set; }
+
+        /// <summary>
+        /// Gets or sets the card balance.
+        /// </summary>
+        /// <value>
+        /// The card balance.
+        /// </value>
+        [JsonProperty( "card_balance" )]
+        public string CardBalance { get; set; }
+
+        /// <summary>
+        /// Gets or sets the card available balance.
+        /// </summary>
+        /// <value>
+        /// The card available balance.
+        /// </value>
+        [JsonProperty( "card_available_balance" )]
+        public string CardAvailableBalance { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entry mode.
+        /// </summary>
+        /// <value>
+        /// The entry mode.
+        /// </value>
+        [JsonProperty( "entry_mode" )]
+        public string EntryMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc bin.
+        /// </summary>
+        /// <value>
+        /// The cc bin.
+        /// </value>
+        [JsonProperty( "cc_bin" )]
+        public string CcBin { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the cc.
+        /// </summary>
+        /// <value>
+        /// The type of the cc.
+        /// </value>
+        [JsonProperty( "cc_type" )]
+        public string CcType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature image.
+        /// </summary>
+        /// <value>
+        /// The signature image.
+        /// </value>
+        [JsonProperty( "signature_image" )]
+        public string SignatureImage { get; set; }
     }
 
     /// <summary>
@@ -1163,16 +1995,95 @@ namespace Rock.NMI
         [JsonProperty( "response_code" )]
         public string ResponseCode { get; set; }
 
-        public string success { get; set; }
-        public string ip_address { get; set; }
-        public string source { get; set; }
-        public string api_method { get; set; }
-        public string username { get; set; }
-        public string batch_id { get; set; }
-        public string processor_response_text { get; set; }
-        public string processor_response_code { get; set; }
-        public string device_license_number { get; set; }
-        public string device_nickname { get; set; }
+        /// <summary>
+        /// Gets or sets the success.
+        /// </summary>
+        /// <value>
+        /// The success.
+        /// </value>
+        [JsonProperty( "success" )]
+        public string Success { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ip address.
+        /// </summary>
+        /// <value>
+        /// The ip address.
+        /// </value>
+        [JsonProperty( "ip_address" )]
+        public string IPAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the aource.
+        /// </summary>
+        /// <value>
+        /// The aource.
+        /// </value>
+        [JsonProperty( "source" )]
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Gets or sets the API method.
+        /// </summary>
+        /// <value>
+        /// The API method.
+        /// </value>
+        [JsonProperty( "api_method" )]
+        public string ApiMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the username.
+        /// </summary>
+        /// <value>
+        /// The username.
+        /// </value>
+        [JsonProperty( "username" )]
+        public string Username { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch identifier.
+        /// </summary>
+        /// <value>
+        /// The batch identifier.
+        /// </value>
+        [JsonProperty( "batch_id" )]
+        public string BatchId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the processor response text.
+        /// </summary>
+        /// <value>
+        /// The processor response text.
+        /// </value>
+        [JsonProperty( "processor_response_text" )]
+        public string ProcessorResponseText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the processor response code.
+        /// </summary>
+        /// <value>
+        /// The processor response code.
+        /// </value>
+        [JsonProperty( "processor_response_code" )]
+        public string ProcessorResponseCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device license number.
+        /// </summary>
+        /// <value>
+        /// The device license number.
+        /// </value>
+        [JsonProperty( "device_license_number" )]
+        public string DeviceLicenseNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device nickname.
+        /// </summary>
+        /// <value>
+        /// The device nickname.
+        /// </value>
+        [JsonProperty( "device_nickname" )]
+        public string DeviceNickname { get; set; }
     }
 
     /// <summary>
@@ -1410,10 +2321,8 @@ namespace Rock.NMI
             // Credit Card related
             { "Card number must be 13-19 digits and a recognizable card format", "Invalid Credit Card Number" },
             { "ccnumber is empty", "Invalid Credit Card Number" },
-
             { "Expiration date must be a present or future month and year", "Invalid Expiration Date" },
             { "ccexp is empty", "Invalid Expiration Date" },
-
             { "CVV must be 3 or 4 digits", "Invalid CVV" },
             { "cvv is empty", "Invalid CVV" },
 

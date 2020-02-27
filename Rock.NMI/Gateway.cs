@@ -705,7 +705,9 @@ namespace Rock.NMI
                         return false;
                     }
 
-                    Subscription subscription = JsonConvert.SerializeXNode( subscriptionNode ).FromJsonOrNull<SubscriptionResult>()?.Subscription;
+                    string subscriptionJson = JsonConvert.SerializeXNode( subscriptionNode );
+
+                    Subscription subscription = subscriptionJson.FromJsonOrNull<SubscriptionResult>()?.Subscription;
 
                     var subscription_id = subscription?.SubscriptionId;
 
@@ -808,7 +810,7 @@ namespace Rock.NMI
 
                     payment.GatewayScheduleId = transaction.OriginalTransactionId;
 
-                    // TODO, does this work?
+                    // NMI does include CustomerId sometimes
                     payment.GatewayPersonIdentifier = transaction.CustomerId;
 
                     var statusMessage = new StringBuilder();

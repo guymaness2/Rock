@@ -226,6 +226,7 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool SupportsSavedAccount( bool isRepeating )
         {
+            // NOTE: The NMI ThreeStep gateway doesn't seem to work with Saved account and scheduled transactions, but we'll deal with it by using the direct post api when in saved account mode???
             return true;
         }
 
@@ -262,7 +263,7 @@ namespace Rock.NMI
                     throw new ArgumentNullException( "paymentInfo" );
                 }
 
-                var rootElement = GetRoot( financialGateway, "sale" );
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "sale" );
 
                 rootElement.Add(
                     new XElement( "ip-address", paymentInfo.IPAddress ),
@@ -293,24 +294,24 @@ namespace Rock.NMI
                     }
                 }
 
-                rootElement.Add( GetBilling( paymentInfo ) );
+                rootElement.Add( GetThreeStepBilling( paymentInfo ) );
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGatewayThreeStepAPI( financialGateway, xdoc );
+                ThreeStepResponse threeStepResponse = PostToGatewayThreeStepAPI<ThreeStepResponse>( financialGateway, xdoc );
 
-                if ( result == null )
+                if ( threeStepResponse == null )
                 {
                     errorMessage = "Invalid Response from NMI!";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
+                if ( threeStepResponse.Result != "1" )
                 {
-                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepResponse.ResultText );
                     return null;
                 }
 
-                return result.GetValueOrNull( "form-url" );
+                return threeStepResponse.FormUrl;
             }
             catch ( WebException webException )
             {
@@ -338,50 +339,56 @@ namespace Rock.NMI
 
             try
             {
-                var rootElement = GetRoot( financialGateway, "complete-action" );
+                if ( resultQueryString.IsNullOrWhiteSpace() )
+                {
+                    errorMessage = "invalid resultQueryString";
+                    return null;
+                }
+
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "complete-action" );
                 rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGatewayThreeStepAPI( financialGateway, xdoc );
+                var threeStepChangeStep3Response = PostToGatewayThreeStepAPI<ThreeStepChargeStep3Response>( financialGateway, xdoc );
 
-                if ( result == null )
+                if ( threeStepChangeStep3Response == null )
                 {
                     errorMessage = "Invalid Response from NMI!";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
+                if ( threeStepChangeStep3Response.Result != "1" )
                 {
-                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepChangeStep3Response.ResultText );
 
-                    string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( result.GetValueOrNull( "result-code" )?.AsInteger() ?? 0, errorMessage );
+                    string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( threeStepChangeStep3Response.ResultCode?.AsInteger() ?? 0, errorMessage );
                     if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                     {
                         errorMessage += string.Format( " ({0})", resultCodeMessage );
                     }
 
                     // write result error as an exception
-                    ExceptionLogService.LogException( new Exception( $"Error processing NMI transaction. Result Code:  {result.GetValueOrNull( "result-code" )} ({resultCodeMessage}). Result text: {result.GetValueOrNull( "result-text" )}. Card Holder Name: {result.GetValueOrNull( "first-name" )} {result.GetValueOrNull( "last-name" )}. Amount: {result.GetValueOrNull( "total-amount" )}. Transaction id: {result.GetValueOrNull( "transaction-id" )}. Descriptor: {result.GetValueOrNull( "descriptor" )}. Order description: {result.GetValueOrNull( "order-description" )}." ) );
+                    //ExceptionLogService.LogException( new Exception( $"Error processing NMI transaction. Result Code:  {threeStepChangeStep3Response.Response.ResultCode} ({resultCodeMessage}). Result text: {result.GetValueOrNull( "result-text" )}. Card Holder Name: {result.GetValueOrNull( "first-name" )} {result.GetValueOrNull( "last-name" )}. Amount: {result.GetValueOrNull( "total-amount" )}. Transaction id: {result.GetValueOrNull( "transaction-id" )}. Descriptor: {result.GetValueOrNull( "descriptor" )}. Order description: {result.GetValueOrNull( "order-description" )}." ) );
 
                     return null;
                 }
 
                 var transaction = new FinancialTransaction();
-                transaction.TransactionCode = result.GetValueOrNull( "transaction-id" );
-                transaction.ForeignKey = result.GetValueOrNull( "customer-vault-id" );
+                transaction.TransactionCode = threeStepChangeStep3Response.TransactionId;
+                transaction.ForeignKey = threeStepChangeStep3Response.CustomerVaultId;
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-                transaction.FinancialPaymentDetail.GatewayPersonIdentifier = result.GetValueOrNull( "customer-vault-id" );
+                transaction.FinancialPaymentDetail.GatewayPersonIdentifier = threeStepChangeStep3Response.CustomerVaultId;
 
-                string ccNumber = result.GetValueOrNull( "billing_cc-number" );
+                string ccNumber = threeStepChangeStep3Response.Billing?.CcNumber;
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
                 {
                     // cc payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-                    transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{result.GetValueOrNull( "billing_first-name" )} {result.GetValueOrNull( "billing_last-name" )}" );
+                    transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}" );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                     transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
-                    string mmyy = result.GetValueOrNull( "billing_cc-exp" );
+                    string mmyy = threeStepChangeStep3Response.Billing?.CcExp;
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                     {
                         transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
@@ -393,14 +400,10 @@ namespace Rock.NMI
                     // ach payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                    transaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account-number" ).Masked( true );
+                    transaction.FinancialPaymentDetail.AccountNumberMasked = threeStepChangeStep3Response.Billing?.AccountNumber.Masked( true );
                 }
 
-                transaction.AdditionalLavaFields = new Dictionary<string, object>();
-                foreach ( var keyVal in result )
-                {
-                    transaction.AdditionalLavaFields.Add( keyVal.Key, keyVal.Value );
-                }
+                transaction.AdditionalLavaFields = GetAdditionalLavaFields( threeStepChangeStep3Response );
 
                 return transaction;
             }
@@ -429,39 +432,43 @@ namespace Rock.NMI
         {
             errorMessage = string.Empty;
 
-            if ( origTransaction != null &&
-                !string.IsNullOrWhiteSpace( origTransaction.TransactionCode ) &&
-                origTransaction.FinancialGateway != null )
+            var financialGateway = origTransaction?.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( origTransaction.FinancialGatewayId ?? 0 );
+
+            if ( financialGateway == null )
             {
-                var rootElement = GetRoot( origTransaction.FinancialGateway, "refund" );
-                rootElement.Add( new XElement( "transaction-id", origTransaction.TransactionCode ) );
-                rootElement.Add( new XElement( "amount", amount.ToString( "0.00" ) ) );
-
-                XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGatewayThreeStepAPI( origTransaction.FinancialGateway, xdoc );
-
-                if ( result == null )
-                {
-                    errorMessage = "Invalid Response from NMI!";
-                    return null;
-                }
-
-                if ( result.GetValueOrNull( "result" ) != "1" )
-                {
-                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
-                    return null;
-                }
-
-                var transaction = new FinancialTransaction();
-                transaction.TransactionCode = result.GetValueOrNull( "transaction-id" );
-                return transaction;
-            }
-            else
-            {
-                errorMessage = "Invalid original transaction, transaction code, or gateway.";
+                throw new NullFinancialGatewayException();
             }
 
-            return null;
+            if ( origTransaction.TransactionCode.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "Invalid transaction code";
+                return null;
+            }
+
+            // https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#transaction_variables at 'Refund'
+            var queryParameters = new Dictionary<string, string>();
+            queryParameters.Add( "type", "refund" );
+            queryParameters.Add( "transactionid", origTransaction.TransactionCode );
+            queryParameters.Add( "amount", amount.ToString( "0.00" ) );
+
+            var refundResponse = PostToGatewayDirectPostAPI<RefundResponse>( financialGateway, queryParameters );
+
+            if ( refundResponse == null )
+            {
+                errorMessage = "Invalid Response from NMI";
+                return null;
+            }
+
+            if ( refundResponse.ResponseCode != "1" )
+            {
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( refundResponse.ResponseText );
+                return null;
+            }
+
+            // return a refund transaction
+            var transaction = new FinancialTransaction();
+            transaction.TransactionCode = refundResponse.TransactionId;
+            return transaction;
         }
 
         /// <summary>
@@ -484,7 +491,7 @@ namespace Rock.NMI
                     throw new ArgumentNullException( "paymentInfo" );
                 }
 
-                var rootElement = GetRoot( financialGateway, "add-subscription" );
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "add-subscription" );
 
                 rootElement.Add(
                     new XElement( "start-date", schedule.StartDate.ToString( "yyyyMMdd" ) ),
@@ -495,6 +502,7 @@ namespace Rock.NMI
                 bool isReferencePayment = paymentInfo is ReferencePaymentInfo;
                 if ( isReferencePayment )
                 {
+                    // this doesn't work
                     var reference = paymentInfo as ReferencePaymentInfo;
                     rootElement.Add( new XElement( "customer-vault-id", reference.ReferenceNumber ) );
                 }
@@ -508,26 +516,26 @@ namespace Rock.NMI
                     }
                 }
 
-                rootElement.Add( GetPlan( schedule, paymentInfo ) );
+                rootElement.Add( GetThreeStepPlan( schedule, paymentInfo ) );
 
-                rootElement.Add( GetBilling( paymentInfo ) );
+                rootElement.Add( GetThreeStepBilling( paymentInfo ) );
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGatewayThreeStepAPI( financialGateway, xdoc );
+                var threeStepResponse = PostToGatewayThreeStepAPI<ThreeStepResponse>( financialGateway, xdoc );
 
-                if ( result == null )
+                if ( threeStepResponse == null )
                 {
                     errorMessage = "Invalid Response from NMI!";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
+                if ( threeStepResponse.Result != "1" )
                 {
-                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepResponse.ResultText );
                     return null;
                 }
 
-                return result.GetValueOrNull( "form-url" );
+                return threeStepResponse.FormUrl;
             }
             catch ( WebException webException )
             {
@@ -556,31 +564,31 @@ namespace Rock.NMI
 
             try
             {
-                var rootElement = GetRoot( financialGateway, "complete-action" );
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "complete-action" );
                 rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGatewayThreeStepAPI( financialGateway, xdoc );
+                var threeStepSubscriptionStep3Response = PostToGatewayThreeStepAPI<ThreeStepSubscriptionStep3Response>( financialGateway, xdoc );
 
-                if ( result == null )
+                if ( threeStepSubscriptionStep3Response == null )
                 {
-                    errorMessage = "Invalid Response from NMI!";
+                    errorMessage = "Invalid Response from NMI";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
+                if ( threeStepSubscriptionStep3Response.Result != "1" )
                 {
-                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepSubscriptionStep3Response.ResultText );
                     return null;
                 }
 
                 var scheduledTransaction = new FinancialScheduledTransaction();
                 scheduledTransaction.IsActive = true;
-                scheduledTransaction.GatewayScheduleId = result.GetValueOrNull( "subscription-id" );
+                scheduledTransaction.GatewayScheduleId = threeStepSubscriptionStep3Response.SubscriptionId;
                 scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-                scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = result.GetValueOrNull( "customer-vault-id" );
-                string ccNumber = result.GetValueOrNull( "billing_cc-number" );
+                scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = threeStepSubscriptionStep3Response.CustomerVaultId;
+                string ccNumber = threeStepSubscriptionStep3Response.Billing?.CcNumber;
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
                 {
                     // cc payment
@@ -589,7 +597,7 @@ namespace Rock.NMI
                     scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
-                    string mmyy = result.GetValueOrNull( "billing_cc-exp" );
+                    string mmyy = threeStepSubscriptionStep3Response.Billing?.CcExp;
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                     {
                         scheduledTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
@@ -601,7 +609,7 @@ namespace Rock.NMI
                     // ach payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" ).Masked( true );
+                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = threeStepSubscriptionStep3Response.Billing?.AccountNumber.Masked( true );
                 }
 
                 GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
@@ -629,39 +637,11 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
+            var financialGateway = transaction.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( transaction.FinancialGatewayId.Value );
+            DeleteSubscription( financialGateway, transaction.GatewayScheduleId );
+            transaction.IsActive = false;
             errorMessage = string.Empty;
-
-            if ( transaction != null &&
-                !string.IsNullOrWhiteSpace( transaction.GatewayScheduleId ) &&
-                transaction.FinancialGateway != null )
-            {
-                var rootElement = GetRoot( transaction.FinancialGateway, "delete-subscription" );
-                rootElement.Add( new XElement( "subscription-id", transaction.GatewayScheduleId ) );
-
-                XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGatewayThreeStepAPI( transaction.FinancialGateway, xdoc );
-
-                if ( result == null )
-                {
-                    errorMessage = "Invalid Response from NMI!";
-                    return false;
-                }
-
-                if ( result.GetValueOrNull( "result" ) != "1" )
-                {
-                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( result.GetValueOrNull( "result-text" ) );
-                    return false;
-                }
-
-                transaction.IsActive = false;
-                return true;
-            }
-            else
-            {
-                errorMessage = "Invalid original transaction, transaction code, or gateway.";
-            }
-
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -881,7 +861,7 @@ namespace Rock.NMI
             errorMessage = string.Empty;
             var customerVaultId = transaction?.FinancialPaymentDetail?.GatewayPersonIdentifier;
 
-            if (customerVaultId.IsNullOrWhiteSpace())
+            if ( customerVaultId.IsNullOrWhiteSpace() )
             {
                 // older implementations of the NMI gateway only stored the customer vault id in transaction.ForeignKey
                 customerVaultId = transaction.ForeignKey;
@@ -916,7 +896,7 @@ namespace Rock.NMI
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="elementName">Name of the element.</param>
         /// <returns></returns>
-        private XElement GetRoot( FinancialGateway financialGateway, string elementName )
+        private XElement CreateThreeStepRootDoc( FinancialGateway financialGateway, string elementName )
         {
             XElement apiKeyElement = new XElement( "api-key", GetAttributeValue( financialGateway, AttributeKey.SecurityKey ) );
             XElement rootElement = new XElement( elementName, apiKeyElement );
@@ -929,7 +909,7 @@ namespace Rock.NMI
         /// </summary>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
-        private XElement GetBilling( PaymentInfo paymentInfo )
+        private XElement GetThreeStepBilling( PaymentInfo paymentInfo )
         {
             // If giving from a Business, FirstName will be blank
             // The Gateway might require a FirstName, so just put '-' if no FirstName was provided
@@ -967,7 +947,7 @@ namespace Rock.NMI
         /// <param name="schedule">The schedule.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
-        private XElement GetPlan( PaymentSchedule schedule, PaymentInfo paymentInfo )
+        private XElement GetThreeStepPlan( PaymentSchedule schedule, PaymentInfo paymentInfo )
         {
             var selectedFrequencyGuid = schedule.TransactionFrequencyValue.Guid.ToString().ToUpper();
 
@@ -1011,7 +991,7 @@ namespace Rock.NMI
         /// <param name="data">The data.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        private Dictionary<string, string> PostToGatewayThreeStepAPI( FinancialGateway financialGateway, XDocument data )
+        private T PostToGatewayThreeStepAPI<T>( FinancialGateway financialGateway, XDocument data ) where T : class
         {
             var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.ThreeStepAPIURL ) );
             var restRequest = new RestRequest( Method.POST );
@@ -1022,29 +1002,33 @@ namespace Rock.NMI
             {
                 var response = restClient.Execute( restRequest );
                 var xdocResult = GetXmlResponse( response );
-
-                if ( xdocResult != null )
+                if ( xdocResult == null )
                 {
-                    // Convert XML result to a dictionary
-                    var result = new Dictionary<string, string>();
-                    foreach ( XElement element in xdocResult.Root.Elements() )
-                    {
-                        if ( element.HasElements )
-                        {
-                            string prefix = element.Name.LocalName;
-                            foreach ( XElement childElement in element.Elements() )
-                            {
-                                result.AddOrIgnore( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
-                            }
-                        }
-                        else
-                        {
-                            result.AddOrIgnore( element.Name.LocalName, element.Value.Trim() );
-                        }
-                    }
-
-                    return result;
+                    return null;
                 }
+
+                var settings = new JsonSerializerSettings();
+
+                settings.Error += new EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs>( ( s, e ) =>
+                {
+                    System.Diagnostics.Debug.WriteLine( $"FromJSON Error: {e.ErrorContext?.Error?.Message}" );
+                    e.ErrorContext.Handled = true;
+                } );
+
+                string jsonResponse = JsonConvert.SerializeXNode( xdocResult.Root, Formatting.None, true );
+
+                T postResult;
+                if ( typeof( T ).Equals( typeof( string ) ) )
+                {
+                    // if caller just wants the response as a string, return the json
+                    postResult = jsonResponse as T;
+                }
+                else
+                {
+                    postResult = jsonResponse.FromJsonOrNull<T>();
+                }
+
+                return postResult;
             }
             catch ( WebException webException )
             {
@@ -1055,8 +1039,34 @@ namespace Rock.NMI
             {
                 throw ex;
             }
+        }
 
-            return null;
+        /// <summary>
+        /// Gets the additional lava fields in the form of a flatted out dictionary where child properties are delimited with '_' (Billing.Street1 becomes Billing_Street1)
+        /// </summary>
+        /// <param name="xdocResult">The xdoc result.</param>
+        /// <returns></returns>
+        private static Dictionary<string, object> GetAdditionalLavaFields<T>( T obj )
+        {
+            var xdocResult = JsonConvert.DeserializeXNode( obj.ToJson(), "root" );
+            var additionalLavaFields = new Dictionary<string, object>();
+            foreach ( XElement element in xdocResult.Root.Elements() )
+            {
+                if ( element.HasElements )
+                {
+                    string prefix = element.Name.LocalName;
+                    foreach ( XElement childElement in element.Elements() )
+                    {
+                        additionalLavaFields.AddOrIgnore( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
+                    }
+                }
+                else
+                {
+                    additionalLavaFields.AddOrIgnore( element.Name.LocalName, element.Value.Trim() );
+                }
+            }
+
+            return additionalLavaFields;
         }
 
         /// <summary>
@@ -1112,7 +1122,7 @@ namespace Rock.NMI
         /// <param name="data">The data.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception"></exception>
-        private T PostToGatewayDirectPostAPI<T>( FinancialGateway financialGateway, Dictionary<string, string> queryParameters )
+        private T PostToGatewayDirectPostAPI<T>( FinancialGateway financialGateway, Dictionary<string, string> queryParameters ) where T : class
         {
             var directPostApiURL = GetAttributeValue( financialGateway, AttributeKey.DirectPostAPIUrl );
             var restClient = new RestClient( directPostApiURL );
@@ -1130,23 +1140,34 @@ namespace Rock.NMI
             try
             {
                 var response = restClient.Execute( restRequest );
+                string jsonResponse;
 
                 // deal with either an XML response or QueryString style response
                 var xdocResult = GetXmlResponse( response );
                 if ( xdocResult != null )
                 {
-                    var jsonResponse = JsonConvert.SerializeXNode( xdocResult.Root );
-                    return jsonResponse.FromJsonOrNull<T>();
+                    jsonResponse = JsonConvert.SerializeXNode( xdocResult.Root );
                 }
                 else
                 {
                     // response in the form of response=3&responsetext=Plan Payments is required REFID:123456789&authcode=&transactionid=&avsresponse=&cvvresponse=&orderid=&type=&response_code=300&customer_vault_id=
                     // so convert this to a dictionary
                     var resultAsDictionary = response?.Content?.Split( '&' ).ToList().Select( s => s.Split( '=' ) ).Where( a => a.Length == 2 ).ToDictionary( k => k[0], v => v[1] );
-
-                    var postResult = resultAsDictionary.ToJson().FromJsonOrNull<T>();
-                    return postResult;
+                    jsonResponse = resultAsDictionary.ToJson();
                 }
+
+                T postResult;
+                if ( typeof( T ).Equals( typeof( string ) ) )
+                {
+                    // if caller just wants the response as a string, return the json
+                    postResult = jsonResponse as T;
+                }
+                else
+                {
+                    postResult = jsonResponse.FromJsonOrNull<T>();
+                }
+
+                return postResult;
             }
             catch ( WebException webException )
             {
@@ -1160,7 +1181,7 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Charges the specified payment info.
+        /// Charges the specified payment info using the DirectPost API
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="paymentInfo">The payment info.</param>
@@ -1173,6 +1194,11 @@ namespace Rock.NMI
             if ( referencedPaymentInfo == null )
             {
                 throw new ReferencePaymentInfoRequired();
+            }
+
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
             }
 
             var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
@@ -1244,7 +1270,7 @@ namespace Rock.NMI
             Customer customerInfo = this.GetCustomerVaultQueryResponse( financialGateway, customerId )?.CustomerVault.Customer;
             transaction.FinancialPaymentDetail = PopulatePaymentInfo( customerInfo );
 
-            transaction.AdditionalLavaFields = chargeResponse.ToJson().FromJsonOrNull<Dictionary<string, object>>();
+            transaction.AdditionalLavaFields = GetAdditionalLavaFields( chargeResponse );
 
             return transaction;
         }
@@ -1301,6 +1327,11 @@ namespace Rock.NMI
             if ( referencedPaymentInfo == null )
             {
                 throw new ReferencePaymentInfoRequired();
+            }
+
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
             }
 
             var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
@@ -1546,6 +1577,11 @@ namespace Rock.NMI
         /// <param name="subscriptionId">The subscription identifier.</param>
         private SubscriptionResponse DeleteSubscription( FinancialGateway financialGateway, string subscriptionId )
         {
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
+            }
+
             var queryParameters = new Dictionary<string, string>();
             queryParameters.Add( "recurring", "delete_subscription" );
             queryParameters.Add( "subscription_id", subscriptionId );
@@ -1638,6 +1674,21 @@ namespace Rock.NMI
             /// </summary>
             public ReferencePaymentInfoRequired()
                 : base( "NMI gateway requires a token or customer reference" )
+            {
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="System.ArgumentNullException" />
+        public class NullFinancialGatewayException : ArgumentNullException
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="NullFinancialGatewayException"/> class.
+            /// </summary>
+            public NullFinancialGatewayException()
+                : base( "Unable to determine financial gateway" )
             {
             }
         }
@@ -1795,6 +1846,11 @@ namespace Rock.NMI
         {
             errorMessage = string.Empty;
 
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
+            }
+
             // see https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#cv_variables
             var queryParameters = new Dictionary<string, string>();
             queryParameters.Add( "customer_vault", "add_customer" );
@@ -1819,7 +1875,7 @@ namespace Rock.NMI
                 string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( createCustomerResponse.ResponseCode.AsInteger(), errorMessage );
                 if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                 {
-                    errorMessage += string.Format( " ({0})", resultCodeMessage );
+                    errorMessage += $" ({resultCodeMessage})";
                 }
 
                 // write result error as an exception

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Rock.Utility;
 
 namespace Rock.NMI
 {
@@ -26,7 +27,7 @@ namespace Rock.NMI
     /// <summary>
     /// Base Response for most classes. All this really does is give <see cref="_additionalData"/>
     /// </summary>
-    public class BaseResponse
+    internal class BaseResponse
     {
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -43,7 +44,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class TokenizerResponse : BaseResponse
+    internal class TokenizerResponse : BaseResponse
     {
         /// <summary>
         /// Gets or sets the token.
@@ -111,7 +112,7 @@ namespace Rock.NMI
     /// <summary>
     /// 
     /// </summary>
-    public class CardTokenResponse
+    internal class CardTokenResponse
     {
         /// <summary>
         /// Gets or sets the number.
@@ -162,7 +163,7 @@ namespace Rock.NMI
     /// <summary>
     /// 
     /// </summary>
-    public class CheckTokenResponse
+    internal class CheckTokenResponse
     {
         /// <summary>
         /// Gets or sets the name.
@@ -207,7 +208,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class CustomerVaultQueryResponse : BaseResponse
+    internal class CustomerVaultQueryResponse : BaseResponse
     {
         /// <summary>
         /// Gets or sets the customer vault.
@@ -223,7 +224,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class CustomerVault : BaseResponse
+    internal class CustomerVault : BaseResponse
     {
         /// <summary>
         /// Gets or sets the customer.
@@ -239,7 +240,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class Customer : BaseResponse
+    internal class Customer : BaseResponse
     {
         /// <summary>
         /// Gets or sets the identifier.
@@ -525,7 +526,7 @@ namespace Rock.NMI
     /// Charge Response 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class ChargeResponse : BaseResponse
+    internal class ChargeResponse : BaseResponse
     {
         /// <summary>
         /// Gets or sets the response.
@@ -621,7 +622,16 @@ namespace Rock.NMI
     /// <summary>
     /// 
     /// </summary>
-    public class CreateCustomerResponse : BaseResponse
+    /// <seealso cref="Rock.NMI.ChargeResponse" />
+    internal class RefundResponse : ChargeResponse
+    {
+        // RefundResponse fields map to the fields in ChargeResponse
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    internal class CreateCustomerResponse : BaseResponse
     {
         /// <summary>
         /// Gets or sets the response.
@@ -718,7 +728,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.CreateCustomerResponse" />
-    public class UpdateCustomerResponse : CreateCustomerResponse
+    internal class UpdateCustomerResponse : CreateCustomerResponse
     {
         // UpdateCustomerResponse is the same as CreateCustomerResponse
     }
@@ -729,7 +739,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.ChargeResponse" />
-    public class SubscriptionResponse : ChargeResponse
+    internal class SubscriptionResponse : ChargeResponse
     {
         // SubscriptionResponse is exactly the same as ChargeResponse
     }
@@ -738,7 +748,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class QuerySubscriptionsResponse : BaseResponse
+    internal class QuerySubscriptionsResponse : BaseResponse
     {
         /// <summary>
         /// Gets or sets the subscriptions result.
@@ -754,7 +764,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class SubscriptionListResult : BaseResponse
+    internal class SubscriptionListResult : BaseResponse
     {
         /// <summary>
         /// Gets or sets the subscription list.
@@ -770,7 +780,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class SubscriptionResult : BaseResponse
+    internal class SubscriptionResult : BaseResponse
     {
         /// <summary>
         /// Gets or sets the subscription.
@@ -786,7 +796,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class Subscription : BaseResponse
+    internal class Subscription : BaseResponse
     {
         /// <summary>
         /// Gets or sets the identifier.
@@ -1103,7 +1113,7 @@ namespace Rock.NMI
     /// <summary>
     /// 
     /// </summary>
-    public class SubscriptionPlan
+    internal class SubscriptionPlan
     {
         /// <summary>
         /// Gets or sets the plan identifier.
@@ -1149,6 +1159,24 @@ namespace Rock.NMI
         /// </value>
         [JsonProperty( "day_frequency" )]
         public string DayFrequency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the month frequency.
+        /// </summary>
+        /// <value>
+        /// The month frequency.
+        /// </value>
+        [JsonProperty( "month_frequency" )]
+        public string MonthFrequency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the day of month.
+        /// </summary>
+        /// <value>
+        /// The day of month.
+        /// </value>
+        [JsonProperty( "day_of_month" )]
+        public string DayOfMonth { get; set; }
     }
 
     /* Get Payments Response */
@@ -1157,7 +1185,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class QueryTransactionsResponse : BaseResponse
+    internal class QueryTransactionsResponse : BaseResponse
     {
         /// <summary>
         /// Gets or sets the transaction list result.
@@ -1173,7 +1201,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class TransactionListResult : BaseResponse
+    internal class TransactionListResult : BaseResponse
     {
         /// <summary>
         /// Gets or sets the transaction list.
@@ -1198,7 +1226,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class Transaction : BaseResponse
+    internal class Transaction : BaseResponse
     {
         /// <summary>
         /// Gets or sets the transaction identifier.
@@ -1917,7 +1945,7 @@ namespace Rock.NMI
     /// 
     /// </summary>
     /// <seealso cref="Rock.NMI.BaseResponse" />
-    public class TransactionAction : BaseResponse
+    internal class TransactionAction : BaseResponse
     {
         /// <summary>
         /// Gets or sets the date.
@@ -2085,6 +2113,173 @@ namespace Rock.NMI
         [JsonProperty( "device_nickname" )]
         public string DeviceNickname { get; set; }
     }
+
+    #region ThreeStepClasses
+
+    internal class ThreeStepResponse : BaseResponse
+    {
+        [JsonProperty( "result" )]
+        public string Result { get; set; }
+
+        [JsonProperty( "result-text" )]
+        public string ResultText { get; set; }
+
+        [JsonProperty( "transaction-id" )]
+        public string TransactionId { get; set; }
+
+        [JsonProperty( "result-code" )]
+        public string ResultCode { get; set; }
+
+        [JsonProperty( "form-url" )]
+        public string FormUrl { get; set; }
+    }
+
+    internal class ThreeStepChargeStep3Response : ThreeStepResponse
+    {
+        [JsonProperty( "action-type" )]
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<string> ) )]
+        public string[] ActionType { get; set; }
+
+        [JsonProperty( "authorization-code" )]
+        public string AuthorizationCode { get; set; }
+
+        [JsonProperty( "avs-result" )]
+        public string AvsResult { get; set; }
+
+        [JsonProperty( "cvv-result" )]
+        public string CvvResult { get; set; }
+
+        [JsonProperty( "amount" )]
+        public string Amount { get; set; }
+
+        [JsonProperty( "amount-authorized" )]
+        public string AmountAuthorized { get; set; }
+
+        [JsonProperty( "tip-amount" )]
+        public string TipAmount { get; set; }
+
+        [JsonProperty( "surcharge-amount" )]
+        public string SurchargeAmount { get; set; }
+
+        [JsonProperty( "ip-address" )]
+        public string IpAddress { get; set; }
+
+        [JsonProperty( "industry" )]
+        public string Industry { get; set; }
+
+        [JsonProperty( "processor-id" )]
+        public string ProcessorId { get; set; }
+
+        [JsonProperty( "currency" )]
+        public string Currency { get; set; }
+
+        [JsonProperty( "customer-id" )]
+        public string CustomerId { get; set; }
+
+        [JsonProperty( "customer-vault-id" )]
+        public string CustomerVaultId { get; set; }
+
+        [JsonProperty( "tax-amount" )]
+        public string TaxAmount { get; set; }
+
+        [JsonProperty( "shipping-amount" )]
+        public string ShippingAmount { get; set; }
+
+        [JsonProperty( "billing" )]
+        public ThreeStepBilling Billing { get; set; }
+
+        [JsonProperty( "shipping" )]
+        public ThreeStepShipping Shipping { get; set; }
+
+        [JsonProperty( "sec-code" )]
+        public string SecCode { get; set; }
+    }
+
+    internal class ThreeStepSubscriptionStep3Response : ThreeStepChargeStep3Response
+    {
+        [JsonProperty( "subscription-id" )]
+        public string SubscriptionId { get; set; }
+    }
+
+    internal class ThreeStepBilling: BaseResponse
+    {
+        [JsonProperty( "billing-id" )]
+        public string BillingId { get; set; }
+
+        [JsonProperty( "first-name" )]
+        public string FirstName { get; set; }
+
+        [JsonProperty( "last-name" )]
+        public string LastName { get; set; }
+
+        [JsonProperty( "address1" )]
+        public string Address1 { get; set; }
+
+        [JsonProperty( "city" )]
+        public string City { get; set; }
+
+        [JsonProperty( "state" )]
+        public string State { get; set; }
+
+        [JsonProperty( "postal" )]
+        public string Postal { get; set; }
+
+        [JsonProperty( "country" )]
+        public string Country { get; set; }
+
+        [JsonProperty( "email" )]
+        public string Email { get; set; }
+
+        [JsonProperty( "cc-number" )]
+        public string CcNumber { get; set; }
+
+        [JsonProperty( "cc-exp" )]
+        public string CcExp { get; set; }
+
+        [JsonProperty( "account-number" )]
+        public string AccountNumber { get; set; }
+
+        [JsonProperty( "account-name" )]
+        public string AccountName { get; set; }
+
+        [JsonProperty( "routing-number" )]
+        public string RoutingNumber { get; set; }
+
+        [JsonProperty( "account-type" )]
+        public string AccountType { get; set; }
+
+        [JsonProperty( "entity-type" )]
+        public string EntityType { get; set; }
+
+        [JsonProperty( "priority" )]
+        public string Priority { get; set; }
+    }
+
+    internal class ThreeStepShipping : BaseResponse
+    {
+        [JsonProperty( "shipping-id" )]
+        public string ShippingId { get; set; }
+    }
+
+    internal class ThreeStepPlan
+    {
+        [JsonProperty( "payments" )]
+        public string Payments { get; set; }
+
+        [JsonProperty( "amount" )]
+        public string Amount { get; set; }
+
+        [JsonProperty( "day-frequency" )]
+        public string DayFrequency { get; set; }
+
+        [JsonProperty( "month-frequency" )]
+        public string MonthFrequency { get; set; }
+
+        [JsonProperty( "day-of-month" )]
+        public string DayOfMonth { get; set; }
+    }
+
+    #endregion ThreeStepClasses
 
     /// <summary>
     /// 

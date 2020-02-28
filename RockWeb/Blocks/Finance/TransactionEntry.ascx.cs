@@ -2675,7 +2675,25 @@ TransactionAccountDetails: [
             FinancialPaymentDetail paymentDetail = null;
             if ( schedule != null )
             {
-                var scheduledTransaction = threeStepGateway.AddScheduledPaymentStep3( financialGateway, resultQueryString, out errorMessage );
+                ReferencePaymentInfo referencePaymentInfo = paymentInfo as ReferencePaymentInfo;
+                FinancialScheduledTransaction scheduledTransaction;
+                if ( referencePaymentInfo != null && referencePaymentInfo.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+                {
+                    /* MDP 2020-02-28
+                     * ThreeStepGateway.AddScheduledPaymentStep3 doesn't support using Saved Accounts for scheduled transactions.
+                     * It returns a 'ccnumber is required' error, and we weren't able to find a solution
+                     * So we ended up just disabling SavedAccounts when doing a Scheduled Transaction (prior to v11)
+                     *
+                     * Starting with V11, we can use the DirectPost API to schedule transactions with saved accounts to get around that issue
+                     */
+
+                    // If this is a saved account, we can juse use the regular DirectPost API of the ThreeStepGateway (see above note)
+                    scheduledTransaction = ( threeStepGateway as GatewayComponent ).AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
+                }
+                else
+                {
+                    scheduledTransaction = threeStepGateway.AddScheduledPaymentStep3( financialGateway, resultQueryString, out errorMessage );
+                }
                 if ( scheduledTransaction == null )
                 {
                     return false;

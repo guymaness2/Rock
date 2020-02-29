@@ -277,7 +277,14 @@ namespace Rock.NMI
                 if ( isReferencePayment )
                 {
                     var reference = paymentInfo as ReferencePaymentInfo;
-                    rootElement.Add( new XElement( "customer-vault-id", reference.ReferenceNumber ) );
+                    string customerVaultId = reference.GatewayPersonIdentifier;
+                    if ( customerVaultId.IsNullOrWhiteSpace() )
+                    {
+                        // for backwards compatiblity
+                        customerVaultId = reference.ReferenceNumber;
+                    }
+
+                    rootElement.Add( new XElement( "customer-vault-id", customerVaultId ) );
                 }
 
                 if ( paymentInfo.AdditionalParameters != null )
@@ -500,9 +507,15 @@ namespace Rock.NMI
                     new XElement( "tax-amount", "0.00" ) );
 
                 bool isReferencePayment = paymentInfo is ReferencePaymentInfo;
+
                 if ( isReferencePayment )
                 {
-                    // this doesn't work
+                    /* MDP 2020-02-28
+                     This doesn't work, and never has! When AddScheduledPaymentStep3 is called, a 'ccnumber ..' error occurs.
+                     We got around it by not allowing saved accounts for Scheduled Transactions.
+                     However, as of V11, we now use the DirectPost API (AddScheduledPayment) instead of AddScheduledPaymentStep3 to add a scheduled transaction 
+                     */
+
                     var reference = paymentInfo as ReferencePaymentInfo;
                     rootElement.Add( new XElement( "customer-vault-id", reference.ReferenceNumber ) );
                 }
@@ -1209,6 +1222,7 @@ namespace Rock.NMI
             var queryParameters = new Dictionary<string, string>();
             queryParameters.Add( "type", "sale" );
 
+            // if both customerId and tokenizerToken are available, use customerId
             if ( customerId.IsNotNullOrWhiteSpace() )
             {
                 queryParameters.Add( "customer_vault_id", customerId );
@@ -1487,6 +1501,8 @@ namespace Rock.NMI
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
             var referencePaymentInfo = new ReferencePaymentInfo();
+
+            // NOTE: If transaction.FinancialPaymentDetail.GatewayPersonIdentifier is blank, a new customervault will be created from the GatewayScheduleId. So it is ok if both GatewayPersonIdentifier and FinancialPersonSavedAccountId are unknown
             referencePaymentInfo.GatewayPersonIdentifier = transaction.FinancialPaymentDetail.GatewayPersonIdentifier;
             referencePaymentInfo.FinancialPersonSavedAccountId = transaction.FinancialPaymentDetail.FinancialPersonSavedAccountId;
             referencePaymentInfo.Amount = transaction.TotalAmount;

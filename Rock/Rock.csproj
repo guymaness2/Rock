@@ -446,6 +446,7 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
@@ -536,6 +537,7 @@
     <Compile Include="Plugin\HotFixes\099_MigrationRollupsFor10_2_0.cs" />
     <Compile Include="Plugin\HotFixes\102_RapidAttendanceEntry.cs" />
     <Compile Include="Plugin\HotFixes\101_RegistrationInstanceGroupPlacement.cs" />
+    <Compile Include="Plugin\HotFixes\103_GroupPlacementUpdates.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
@@ -547,6 +549,7 @@
     <Compile Include="SystemGuid\SystemCommunication.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
     <Compile Include="Transactions\RegisterControllersTransaction.cs" />
+    <Compile Include="Transactions\RunDataViewTransaction.cs" />
     <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
     <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />

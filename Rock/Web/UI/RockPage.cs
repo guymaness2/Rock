@@ -1548,17 +1548,6 @@ namespace Rock.Web.UI
         protected override void OnLoadComplete( EventArgs e )
         {
             base.OnLoadComplete( e );
-
-            // create a page view transaction if enabled
-            // moved this from OnLoad so we could get the updated title (if Lava or the block changed it)
-            if ( !Page.IsPostBack && _pageCache != null )
-            {
-                if ( _pageCache.Layout.Site.EnablePageViews )
-                {
-                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache );
-                    pageViewTransaction.Enqueue();
-                }
-            }
         }
 
         /// <summary>
@@ -1722,10 +1711,22 @@ namespace Rock.Web.UI
         {
             base.OnSaveStateComplete( e );
 
+            TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
+
+            // create a page view transaction if enabled
+            // Earlier it was moved to OnLoadComplete from OnLoad so we could get the updated title (if Lava or the block changed it)
+            // Then it was moved from OnLoadComplete so we could get the Page Load Time
+            if ( !Page.IsPostBack && _pageCache != null )
+            {
+                if ( _pageCache.Layout.Site.EnablePageViews )
+                {
+                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, null, tsDuration.TotalSeconds );
+                    pageViewTransaction.Enqueue();
+                }
+            }
+
             if ( phLoadStats != null )
             {
-                TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-
                 var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
 
                 if ( customPersister != null )
@@ -2014,7 +2015,8 @@ Sys.Application.add_load(function () {
             string virtualPath = this.ResolveRockUrl( url );
             if ( Context.Request != null && Context.Request.Url != null )
             {
-                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+                string protocol = WebRequestHelper.IsSecureConnection(Context) ? "https" : Context.Request.Url.Scheme;
+                return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
             }
 
             return GlobalAttributesCache.Get().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();

@@ -136,7 +136,7 @@
 
                             <div id="divNewPayment" runat="server" class="radio-content">
 
-                                <asp:HiddenField ID="hfPaymentTab" runat="server" />
+                                <Rock:HiddenFieldWithClass ID="hfPaymentTab" CssClass="js-payment-tab" runat="server" />
                                 <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
                                     <ul class="nav nav-pills">
                                         <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Card</a></li>
@@ -147,10 +147,14 @@
                                 <div class="tab-content">
 
                                     <div id="divCCPaymentInfo" runat="server" visible="false" class="tab-pane">
-                                        <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" />
+                                        <div class="js-creditcard-validation-notification alert alert-validation" style="display:none;">
+                            				<span class="js-notification-text"></span>
+                                        </div>
+
+                                        <Rock:RockTextBox ID="txtCardFirstName" runat="server" CssClass="js-creditcard-firstname" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
+                                        <Rock:RockTextBox ID="txtCardLastName" runat="server" CssClass="js-creditcard-lastname" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
+                                        <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" CssClass="js-creditcard-fullname" Visible="false"></Rock:RockTextBox>
+                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number"  CssClass="js-creditcard-number credit-card" MaxLength="19" />
                                         <ul class="card-logos list-unstyled">
                                             <li class="card-visa"></li>
                                             <li class="card-mastercard"></li>
@@ -159,23 +163,26 @@
                                         </ul>
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
+                                                <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" CssClass="js-creditcard-expiration" />
                                             </div>
                                             <div class="col-md-6">
-                                                <Rock:RockTextBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
+                                                <Rock:RockTextBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs js-creditcard-cvv" runat="server" MaxLength="4" />
                                             </div>
                                         </div>
-                                        <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
+                                        <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input js-billing-address-checkbox" />
                                         <div id="divBillingAddress" runat="server" class="toggle-content">
-                                            <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
+                                            <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" CssClass="js-billingaddress-control"/>
                                         </div>
                                     </div>
 
                                     <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
-                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name on Account" />
-                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" />
-                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" />
-                                        <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
+                                        <div class="js-ach-validation-notification alert alert-validation" style="display:none;">
+                            				<span class="js-notification-text"></span>
+                                        </div>
+                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name on Account" CssClass="js-ach-accountname" />
+                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" CssClass="js-ach-routingnumber" />
+                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" CssClass="js-ach-accountnumber"/>
+                                        <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type" CssClass="js-ach-accounttype">
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />
                                         </Rock:RockRadioButtonList>
@@ -206,18 +213,18 @@
                         <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();" >Previous</a>
                         <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
                         <asp:LinkButton ID="btnStep2PaymentPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnStep2PaymentPrev_Click" />
-                        <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Next" />
+                        <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right js-step2-submit" Text="Next" />
                     </div>
                 </div>
             </div>
 
-            <iframe id="iframeStep2" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
+            <iframe id="iframeStep2" class="js-step2-iframe" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
 
-            <asp:HiddenField ID="hfStep2AutoSubmit" runat="server" Value="false" />
-            <asp:HiddenField ID="hfStep2Url" runat="server" />
-            <asp:HiddenField ID="hfStep2ReturnQueryString" runat="server" />
+            <Rock:HiddenFieldWithClass ID="hfStep2AutoSubmit" CssClass="js-step2-autosubmit" runat="server" Value="false" />
+            <Rock:HiddenFieldWithClass ID="hfStep2Url" CssClass="js-step2-url" runat="server" />
+            <Rock:HiddenFieldWithClass ID="hfStep2ReturnQueryString" CssClass="js-step2-returnquerystring" runat="server" />
             <span style="display:none" >
-                <asp:LinkButton ID="lbStep2Return" runat="server" Text="Step 2 Return" OnClick="lbStep2Return_Click" CausesValidation="false" ></asp:LinkButton>
+                <asp:LinkButton ID="lbStep2Return" CssClass="js-step2-return" runat="server" Text="Step 2 Return" OnClick="lbStep2Return_Click" CausesValidation="false" ></asp:LinkButton>
             </span>
 
         </asp:Panel>
@@ -352,5 +359,139 @@
 
         </asp:Panel>
 
+        <asp:Panel Id="pnlThreeStepJavascript" runat="server" Visible="false">
+            <script type="text/javascript">
+                Sys.Application.add_load(function () {
+                    /* Threestep gateway related */
+                    var $step2Submit = $('.js-step2-submit');
+
+                    // {{validationGroup}} will get replaced with whatever the validationGroup is
+                    var validationGroup = '<%=this.BlockValidationGroup %>';
+                    var $step2Url = $('.js-step2-url');
+                    var $updateProgress = $('#updateProgress');
+                    var $iframeStep2 = $('.js-step2-iframe');
+                    var $addressControl = $('.js-billingaddress-control');
+
+                    // {{postbackControlReference}} will get replaced with whatever the postback control reference is
+                    var postbackControlReferenceScript = "javascript:<%=this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) %>";
+
+                    // Posts the iframe (step 2)
+                    $step2Submit.on('click', function (e) {
+                        e.preventDefault();
+
+                        var paymentType = $('.js-payment-tab').val();
+
+                        if (typeof (Page_ClientValidate) == 'function') {
+                            if (Page_IsValid && Page_ClientValidate(validationGroup)) {
+                                $(this).prop('disabled', true);
+
+                                var src = $step2Url.val();
+                                var $form = $iframeStep2.contents().find('#Step2Form');
+                                var $cbBillingAddressCheckbox = $('.js-billing-address-checkbox');
+
+                                if ($cbBillingAddressCheckbox.is(':visible') && $cbBillingAddressCheckbox.prop('checked'))
+                                    $form.find('.js-billing-address1').val($('.js-street1', $addressControl).val());
+                                $form.find('.js-billing-city').val($('.js-city', $addressControl).val());
+                                $form.find('.js-billing-state').val($('.js-state', $addressControl).val());
+                                $form.find('.js-billing-postal').val($('.js-postal-code', $addressControl).val());
+                                $form.find('.js-billing-country').val($('.js-country', $addressControl).val());
+                            }
+
+                            if (paymentType == 'CreditCard') {
+                                var $cardFirstName = $('.js-creditcard-firstname');
+                                var $cardLastName = $('.js-creditcard-lastname');
+                                var $cardFullName = $('.js-creditcard-fullname');
+                                var $cardNumber = $('.js-creditcard-number');
+                                var $cardExpMonth = $('.js-monthyear-month');
+                                var $cardExpYear = $('.js-monthyear-year');
+                                var $cardCVV = $('.js-creditcard-cvv');
+                                var validationMessage = '';
+                                if ($cardNumber.val() == '') {
+                                    validationMessage += '<li>' + 'Card number is required' + '</li>'
+                                }
+                                if ($cardExpMonth.val() == '' || $cardExpYear.val() == '') {
+                                    validationMessage += '<li>' + 'Expiration is required' + '</li>'
+                                }
+                                if ($cardCVV.val() == '') {
+                                    validationMessage += '<li>' + 'CVV is required' + '</li>'
+                                }
+
+
+                                if (validationMessage != '') {
+                                    var $creditCardValidationNotification = $('.js-creditcard-validation-notification');
+                                    $('.js-notification-text', $creditCardValidationNotification).html('<ul>' + validationMessage + '</ul>');
+                                    $creditCardValidationNotification.show();
+                                    return false;
+                                }
+
+                                $form.find('.js-cc-first-name').val($cardFirstName.val());
+                                $form.find('.js-cc-last-name').val($cardLastName.val());
+                                $form.find('.js-cc-full-name').val($cardFullName.val());
+                                $form.find('.js-cc-number').val($cardNumber.val());
+                                var mm = $cardExpMonth.val();
+                                var yy = $cardExpYear.val();
+                                mm = mm.length == 1 ? '0' + mm : mm;
+                                yy = yy.length == 4 ? yy.substring(2, 4) : yy;
+                                $form.find('.js-cc-expiration').val(mm + yy);
+                                $form.find('.js-cc-cvv').val($cardCVV.val());
+                            } else {
+                                var $achAccountName = $('.js-ach-accountname');
+                                var $achAccountNumber = $('.js-ach-accountnumber');
+                                var $achAccountRoutingNumber = $('.js-ach-routingnumber');
+                                var $achAccountType = $('.js-ach-accounttype').find('input:checked');
+
+                                var validationMessage = '';
+                                if ($achAccountName.val() == '') {
+                                    validationMessage += '<li>' + 'Account name is required' + '</li>'
+                                }
+                                if ($achAccountNumber.val() == '' || $cardExpYear.val() == '') {
+                                    validationMessage += '<li>' + 'Account number is required' + '</li>'
+                                }
+                                if ($achAccountRoutingNumber.val() == '') {
+                                    validationMessage += '<li>' + 'Routing number is required' + '</li>'
+                                }
+                                if (validationMessage != '') {
+                                    var $achValidationNotification = $('.js-ach-validation-notification');
+                                    $('.js-notification-text', $achValidationNotification).html('<ul>' + validationMessage + '</ul>');
+                                    $achValidationNotification.show();
+                                    return false;
+                                }
+
+                                $form.find('.js-account-name').val($achAccountName.val());
+                                $form.find('.js-account-number').val($achAccountNumber.val());
+                                $form.find('.js-routing-number').val($achAccountRoutingNumber.val());
+                                $form.find('.js-account-type').val($achAccountType.val());
+                                $form.find('.js-entity-type').val('personal');
+                            }
+
+                            $updateProgress.show();
+                            $form.attr('action', src);
+                            $form.submit();
+                        }
+                    });
+
+                    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
+                    // The qry parameter value is saved to a hidden field and a post back is performed
+                    $('#iframeStep2').on('load', function (e) {
+                        var location = this.contentWindow.location;
+                        var qryString = this.contentWindow.location.search;
+                        if (qryString && qryString != '' && qryString.startsWith('?token-id')) {
+                            $('.js-step2-returnquerystring').val(qryString);
+                            window.location = postbackControlReferenceScript;
+                        } else {
+                            if ($('.js-step2-autosubmit').val() == 'true') {
+                                $('#updateProgress').show();
+                                var src = $('.js-step2-url').val();
+                                var $form = $('#iframeStep2').contents().find('#Step2Form');
+                                $form.attr('action', src);
+                                $form.submit();
+                                $('#updateProgress').hide();
+                            }
+                        }
+                    });
+                });
+
+            </script>
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

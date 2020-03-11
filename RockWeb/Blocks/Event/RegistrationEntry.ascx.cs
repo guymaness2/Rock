@@ -648,7 +648,6 @@ namespace RockWeb.Blocks.Event
             base.OnLoad( e );
 
             // Reset warning/error messages
-            Debug.WriteLine( "txtCreditCard.Text: " + txtCreditCard.Text );
             nbMain.Visible = false;
             nbWaitingList.Visible = false;
             nbDiscountCode.Visible = false;

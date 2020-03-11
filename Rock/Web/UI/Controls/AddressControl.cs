@@ -719,7 +719,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();  // div.row
                 }
 
-                writer.AddAttribute( "class", "js-addressControl" );
+                writer.AddAttribute( "class", "js-addressControl " + this.CssClass );
                 writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
                 writer.AddAttribute( "data-itemlabel", this.Label != string.Empty ? this.Label : "Address" );
                 writer.AddAttribute( "id", this.ClientID );

@@ -128,6 +128,65 @@ namespace RockWeb.Blocks.Event
         private bool EditAllowed { get; set; }
         protected bool PercentageDiscountExists { get; set; }
 
+        /// <summary>
+        /// Gets the financial gateway.
+        /// </summary>
+        /// <value>
+        /// The financial gateway.
+        /// </value>
+        protected FinancialGateway FinancialGateway
+        {
+            get
+            {
+                FinancialGateway financialGateway = null;
+                if ( RegistrationTemplate != null )
+                {
+                    financialGateway = RegistrationTemplate.FinancialGateway;
+                }
+                else
+                {
+                    var rockContext = new RockContext();
+                    var registrationInstanceId = this.PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    if ( !registrationInstanceId.HasValue )
+                    {
+                        var registrationId = this.PageParameter( "RegistrationId" ).AsIntegerOrNull();
+                        if ( registrationId.HasValue )
+                        {
+                            registrationInstanceId = new RegistrationService( rockContext ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
+                        }
+                    }
+
+                    if ( registrationInstanceId.HasValue )
+                    {
+                        financialGateway = new RegistrationInstanceService( rockContext ).GetSelect( registrationInstanceId.Value, s => s.RegistrationTemplate.FinancialGateway );
+                    }
+                }
+
+                return financialGateway;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [using three-step gateway].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [using three-step gateway]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool Using3StepGateway
+        {
+            get
+            {
+                FinancialGateway financialGateway = this.FinancialGateway;
+
+                if ( financialGateway != null )
+                {
+                    return financialGateway.GetGatewayComponent() is IThreeStepGatewayComponent;
+                }
+
+                return false;
+            }
+        }
+
         private RegistrationTemplate RegistrationTemplate
         {
             get
@@ -1701,9 +1760,9 @@ namespace RockWeb.Blocks.Event
 
             ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
 
-            if ( this.RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
+            if ( Using3StepGateway )
             {
-                bool usingNMIThreeStep = this.RegistrationTemplate.FinancialGateway.GetGatewayComponent() is Rock.NMI.Gateway;
+                bool usingNMIThreeStep = this.FinancialGateway.GetGatewayComponent() is Rock.NMI.Gateway;
                 if ( usingNMIThreeStep )
                 {
                     var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );

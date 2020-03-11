@@ -2550,4 +2550,56 @@ namespace Rock.NMI
             { "DECLINE", "Declined" }
         };
     }
+
+    #region NMI.Gateway Exceptions
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Exception" />
+    public class NMIGatewayException : Exception
+    {
+        string _stackTrace;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NMIGatewayException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public NMIGatewayException( string errorMessage ) : this( errorMessage, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NMIGatewayException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="innerException">The inner exception.</param>
+        public NMIGatewayException( string errorMessage, Exception innerException ) : base( errorMessage, innerException )
+        {
+            // lets set the stacktrace manually to ensure we have one. Otherwise, it would usually be blank.
+            _stackTrace = new System.Diagnostics.StackTrace( true ).ToString();
+        }
+
+        /// <summary>
+        /// Gets a string representation of the immediate frames on the call stack.
+        /// </summary>
+        public override string StackTrace => this._stackTrace ?? base.StackTrace;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.ArgumentNullException" />
+    public class NullFinancialGatewayException : ArgumentNullException
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NullFinancialGatewayException"/> class.
+        /// </summary>
+        public NullFinancialGatewayException()
+            : base( "Unable to determine financial gateway" )
+        {
+        }
+    }
+
+    #endregion NMI.Gateway Exceptions
 }

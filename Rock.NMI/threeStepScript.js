@@ -2,6 +2,11 @@
     /* Threestep gateway related */
     var $step2Submit = $('.js-step2-submit');
 
+    if ($step2Submit.length == 0) {
+        // no payment controls shown yet
+        return;
+    }
+
     // {{validationGroup}} will get replaced with whatever the validationGroup is
     var validationGroup = '{{validationGroup}}';
     var $step2Url = $('.js-step2-url');
@@ -21,8 +26,8 @@
             return;
         }
 
-        debugger
-
+        // If there is a payment type selection, use the selected one.
+        // If there isn't a payment type selection (like on the registration blocks) it is CreditCard
         var paymentType = $('.js-payment-tab').val() ?? 'CreditCard';
 
         if (typeof (Page_ClientValidate) == 'function') {
@@ -33,13 +38,14 @@
                 var $form = $iframeStep2.contents().find('#Step2Form');
                 var $cbBillingAddressCheckbox = $('.js-billing-address-checkbox');
                 var populateBilling = true;
+
                 if ($cbBillingAddressCheckbox.length == 0) {
                     populateBilling = true;
                 } else {
                     populateBilling = ($cbBillingAddressCheckbox.is(':visible') && ($cbBillingAddressCheckbox.prop('checked')));
                 }
 
-                if (populateBilling) {
+                if (populateBilling && $addressControl.length) {
                     $form.find('.js-billing-address1').val($('.js-street1', $addressControl).val());
                     $form.find('.js-billing-city').val($('.js-city', $addressControl).val());
                     $form.find('.js-billing-state').val($('.js-state', $addressControl).val());
@@ -61,11 +67,11 @@
                     validationMessage += '<li>' + 'Card number is required' + '</li>'
                 }
 
-                if ($cardExpMonth.val() == '' || $cardExpYear.val() == '') {
+                if ($cardExpMonth.val().trim() == '' || $cardExpYear.val().trim() == '') {
                     validationMessage += '<li>' + 'Expiration is required' + '</li>'
                 }
 
-                if ($cardCVV.val() == '') {
+                if ($cardCVV.val().trim() == '') {
                     validationMessage += '<li>' + 'CVV is required' + '</li>'
                 }
 
@@ -94,13 +100,13 @@
                 var $achAccountType = $('.js-ach-accounttype').find('input:checked');
 
                 var validationMessage = '';
-                if ($achAccountName.val() == '') {
+                if ($achAccountName.val().trim() == '') {
                     validationMessage += '<li>' + 'Account name is required' + '</li>'
                 }
-                if ($achAccountNumber.val() == '') {
+                if ($achAccountNumber.val().trim() == '') {
                     validationMessage += '<li>' + 'Account number is required' + '</li>'
                 }
-                if ($achAccountRoutingNumber.val() == '') {
+                if ($achAccountRoutingNumber.val().trim() == '') {
                     validationMessage += '<li>' + 'Routing number is required' + '</li>'
                 }
                 if (validationMessage != '') {
@@ -145,8 +151,11 @@
             }
         }
         catch (err) {
-            debugger
+            // some sort of exception was generated. This can be caused by a user attempting to put html or tags for input values.
+            var $creditCardOrAchValidationNotification = $('.js-creditcard-validation-notification, .js-ach-validation-notification');
             $('#updateProgress').hide();
+            $('.js-notification-text', $creditCardOrAchValidationNotification).text('Error submitting payment information. This might be caused by invalid values.');
+            $creditCardOrAchValidationNotification.show();
             console.log(err);
         }
     });

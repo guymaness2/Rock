@@ -2041,5 +2041,21 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         }
 
         #endregion IHostedGatewayComponent
+
+        #region NMI Specific
+
+        /// <summary>
+        /// Gets the three step javascript which will validate the inputs and submit payment details to NMI gateway
+        /// </summary>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="postbackControlReference">The postback control reference.</param>
+        /// <returns></returns>
+        public static string GetThreeStepJavascript(string validationGroup, string postbackControlReference )
+        {
+            var script = Scripts.threeStepScript.Replace( "{{validationGroup}}", validationGroup ).Replace( "{{postbackControlReference}}", postbackControlReference );
+            return script;
+        }
+
+        #endregion
     }
 }

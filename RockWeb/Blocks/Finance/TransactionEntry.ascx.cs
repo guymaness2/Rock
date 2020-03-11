@@ -811,6 +811,8 @@ TransactionAccountDetails: [
                     ShowMessage( NotificationBoxType.Danger, "Payment Error", errorMessage );
                 }
             }
+
+            btnConfirmationNext.Visible = false;
         }
 
         /// <summary>
@@ -3246,7 +3248,13 @@ TransactionAccountDetails: [
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
 
-            pnlThreeStepJavascript.Visible = _using3StepGateway;
+            bool usingNMIThreeStep = this._ccGatewayComponent is Rock.NMI.Gateway || this._achGatewayComponent is Rock.NMI.Gateway;
+            if ( usingNMIThreeStep )
+            {
+                var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "three-step-script", threeStepScript, true );
+            }
+
             if ( _using3StepGateway )
             {
                 string submitScript = string.Format( @"

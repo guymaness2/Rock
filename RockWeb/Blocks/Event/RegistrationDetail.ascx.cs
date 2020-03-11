@@ -1409,13 +1409,6 @@ namespace RockWeb.Blocks.Event
             if ( Registration != null )
             {
                 RegistrationInstanceId = Registration.RegistrationInstanceId;
-                if ( this.RegistrationTemplate != null && this.RegistrationTemplate.FinancialGateway != null )
-                {
-                    if ( this.RegistrationTemplate.FinancialGateway.GetGatewayComponent() is IThreeStepGatewayComponent )
-                    {
-                        pnlThreeStepJavascript.Visible = true;
-                    }
-                }
 
                 // render UI based on Authorized and IsSystem
                 bool readOnly = false;
@@ -1707,6 +1700,16 @@ namespace RockWeb.Blocks.Event
             );
 
             ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
+
+            if ( this.RegistrationTemplate != null && RegistrationTemplate.FinancialGateway != null )
+            {
+                bool usingNMIThreeStep = this.RegistrationTemplate.FinancialGateway.GetGatewayComponent() is Rock.NMI.Gateway;
+                if ( usingNMIThreeStep )
+                {
+                    var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                    ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
+                }
+            }
         }
 
         #endregion
@@ -2094,7 +2097,6 @@ namespace RockWeb.Blocks.Event
                         qry = qry.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
                     }
 
-                    return;
                     gPayments.DataSource = qry.ToList().Select( p => new
                     {
                         p.Id,

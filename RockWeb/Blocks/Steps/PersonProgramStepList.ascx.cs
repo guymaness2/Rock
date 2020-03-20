@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Steps
                 itemSummary.AppendLine( string.Format( formatString, attribute.Name, formattedValue ) );
             }
         
-            lStepStatus.Text = string.Format("<small>{0}</small>", itemSummary.ToString());
+            lStepStatus.Text = itemSummary.ToString();
         }
 
         /// <summary>

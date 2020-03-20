@@ -59,15 +59,6 @@ namespace Rock.Migrations
             CreateIndex("dbo.Interaction", "InteractionDateKey");
             CreateIndex("dbo.MetricValue", "MetricValueDateKey");
 
-            UpdateKeyDateColumnData( "ConnectionRequest", "CreatedDateKey", "CreatedDateTime" );
-            UpdateKeyDateColumnData( "BenevolenceRequest", "RequestDateKey", "RequestDateTime" );
-            UpdateKeyDateColumnData( "FinancialPledge", "StartDateKey", "StartDate" );
-            UpdateKeyDateColumnData( "FinancialPledge", "EndDateKey", "EndDate" );
-            UpdateKeyDateColumnData( "Registration", "CreatedDateKey", "CreatedDateTime" );
-            UpdateKeyDateColumnData( "Step", "CompletedDateKey", "CompletedDateTime" );
-            UpdateKeyDateColumnData( "Step", "StartDateKey", "StartDateTime" );
-            UpdateKeyDateColumnData( "Step", "EndDateKey", "EndDateTime" );
-
             AddJobToUpdateDateKeyValues();
         }
 
@@ -148,14 +139,6 @@ namespace Rock.Migrations
                 WHERE [Class] = 'Rock.Jobs.PostV110DataMigrationsUpdateDateKeyValues'
                                 AND [Guid] = '{SystemGuid.ServiceJob.DATA_MIGRATIONS_110_POPULATE_DATE_KEYS}'
                 " );
-        }
-
-        private void UpdateKeyDateColumnData( string tableName, string keyColumnName, string dateColumnName )
-        {
-            Sql( $@"
-                UPDATE [{tableName}]
-                SET [{keyColumnName}] = CONVERT(INT, (CONVERT(CHAR(8), [{dateColumnName}], 112)))
-            " );
         }
     }
 }

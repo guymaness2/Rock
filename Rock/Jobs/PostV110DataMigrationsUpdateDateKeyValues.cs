@@ -66,6 +66,14 @@ namespace Rock.Jobs
                 UpdateKeyDateColumnData( rockContext, "AttendanceOccurrence", "OccurrenceDateKey", "OccurrenceDate" );
                 UpdateKeyDateColumnData( rockContext, "Communication", "SendDateKey", "SendDateTime" );
                 UpdateKeyDateColumnData( rockContext, "MetricValue", "MetricValueDateKey", "MetricValueDateTime" );
+                UpdateKeyDateColumnData( rockContext, "ConnectionRequest", "CreatedDateKey", "CreatedDateTime" );
+                UpdateKeyDateColumnData( rockContext, "BenevolenceRequest", "RequestDateKey", "RequestDateTime" );
+                UpdateKeyDateColumnData( rockContext, "FinancialPledge", "StartDateKey", "StartDate" );
+                UpdateKeyDateColumnData( rockContext, "FinancialPledge", "EndDateKey", "EndDate" );
+                UpdateKeyDateColumnData( rockContext, "Registration", "CreatedDateKey", "CreatedDateTime" );
+                UpdateKeyDateColumnData( rockContext, "Step", "CompletedDateKey", "CompletedDateTime" );
+                UpdateKeyDateColumnData( rockContext, "Step", "StartDateKey", "StartDateTime" );
+                UpdateKeyDateColumnData( rockContext, "Step", "EndDateKey", "EndDateTime" );
             }
 
             DeleteJob( context.GetJobId() );

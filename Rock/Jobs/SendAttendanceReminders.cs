@@ -135,9 +135,9 @@ namespace Rock.Jobs
             }
 
             var results = new StringBuilder();
-            if(jobPreferredCommunicationType != CommunicationType.Email && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
+            if ( jobPreferredCommunicationType != CommunicationType.Email && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
             {
-                results.AppendLine($"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email.");
+                results.AppendLine( $"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email." );
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 
@@ -152,7 +152,7 @@ namespace Rock.Jobs
             var attendanceRemindersSent = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType, isSmsEnabled, out var errors );
 
             results.AppendLine( $"{attendanceRemindersSent} attendance reminders sent." );
-            context.Result =  results.ToString();
+            context.Result = results.ToString();
             HandleErrorMessages( context, errors );
         }
 
@@ -510,6 +510,12 @@ namespace Rock.Jobs
             if ( string.IsNullOrWhiteSpace( leader.Person.Email ) )
             {
                 errorMessages.Add( $"{leader.Person.FullName} does not have an email address entered." );
+                return null;
+            }
+
+            if ( !leader.Person.IsEmailActive )
+            {
+                errorMessages.Add( $"{leader.Person.FullName.ToPossessive()} email address is inactive." );
                 return null;
             }
 

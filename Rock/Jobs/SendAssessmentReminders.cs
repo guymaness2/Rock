@@ -112,7 +112,6 @@ namespace Rock.Jobs
 
             DateTime currentDate = DateTime.Now.Date;
             int assessmentRemindersSent = 0;
-            int errorCount = 0;
             var errorMessages = new List<string>();
 
             using ( var rockContext = new RockContext() )
@@ -154,7 +153,7 @@ namespace Rock.Jobs
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine();
-                    sb.Append( string.Format( "{0} Errors: ", errorCount ) );
+                    sb.Append( string.Format( "{0} Errors: ", errorMessages.Count() ) );
                     errorMessages.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                     string errors = sb.ToString();
                     context.Result += errors;
@@ -169,6 +168,13 @@ namespace Rock.Jobs
         private List<string> SendReminderEmail( Guid assessmentSystemEmailGuid, int PersonAliasId )
         {
             var person = new PersonAliasService( new RockContext() ).GetPerson( PersonAliasId );
+            if ( !person.IsEmailActive )
+            {
+                return new List<string>
+                {
+                    $"{person.FullName.ToPossessive()} email address is inactive."
+                };
+            }
 
             var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             mergeObjects.Add( "Person", person );

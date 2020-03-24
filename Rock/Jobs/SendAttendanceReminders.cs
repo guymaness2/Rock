@@ -152,8 +152,8 @@ namespace Rock.Jobs
             var attendanceRemindersResults = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType, isSmsEnabled );
 
             results.AppendLine( $"{attendanceRemindersResults.MessagesSent} attendance reminders sent." );
-            
-            results.Append(FormatWarningMessages( attendanceRemindersResults.Warnings ));
+
+            results.Append( FormatWarningMessages( attendanceRemindersResults.Warnings ) );
 
             context.Result = results.ToString();
             HandleErrorMessages( context, attendanceRemindersResults.Errors );
@@ -560,7 +560,7 @@ namespace Rock.Jobs
             }
         }
 
-        private StringBuilder FormatMessages(List<string> messages, string label )
+        private StringBuilder FormatMessages( List<string> messages, string label )
         {
             StringBuilder sb = new StringBuilder();
             if ( messages.Any() )

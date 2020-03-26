@@ -91,6 +91,7 @@
     <Compile Include="Model\RegistrationTests.cs" />
     <Compile Include="Model\StepTests.cs" />
     <Compile Include="Utility\HttpSimulator.cs" />
+    <Compile Include="Utility\LoggerTests.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />
     <Compile Include="Rest\ControllersTests\AttendanceControllerTests.cs" />

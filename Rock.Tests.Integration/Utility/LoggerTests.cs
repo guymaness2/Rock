@@ -13,52 +13,28 @@ namespace Rock.Tests.Integration.Utility
     [TestClass]
     public class LoggerTests
     {
-        public LoggerTests()
+        class RockLogConfiguration : IRockLogConfiguration
         {
-            //
-            // TODO: Add constructor logic here
-            //
+            public RockLogLevel LogLevel { get; set; }
+            public int MaxFileSize { get; set; }
+            public int NumberOfLogFiles { get; set; }
+            public List<string> DomainsToLog { get; set; }
         }
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
+        [TestMethod]
+        public void LogInformationShouldOnlyLogCorrectDomains()
         {
-            get
+            var config = new RockLogConfiguration
             {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
+                LogLevel = RockLogLevel.All,
+                MaxFileSize = 1,
+                NumberOfLogFiles = 1,
+                DomainsToLog = new List<string> { "OTHER" }
+            };
+            var logger = new Logger( config );
+            logger.Information( "Test" );
+            logger.Information( "CRM", "CRM Test" );
         }
-
-        #region Additional test attributes
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
-        #endregion
 
         [TestMethod]
         public async Task LogInformationWorks()
@@ -80,10 +56,8 @@ namespace Rock.Tests.Integration.Utility
 
             for ( var i = 0; i < logCount; i++ )
             {
-                taskList.Add(Task.Run( () =>
-                {
-                    Logger.Log.Information( "coolPlugin", $"{logMessage} {i}." );
-                } ));
+                var index = i;
+                taskList.Add(Task.Run( () => Logger.Log.Information( "coolPlugin", $"{logMessage} {index}." )));
             }
             var t = Task.WhenAll( taskList.ToArray() );
             await t;
@@ -95,13 +69,15 @@ namespace Rock.Tests.Integration.Utility
 
             for ( var i = 0; i < logCount; i++ )
             {
+                var index = i;
                 taskList.Add( Task.Run( () =>
                 {
-                    Logger.Log.Information( $"{logMessage} {i}." );
+                    Logger.Log.Information( $"{logMessage} {index}." );
                 } ) );
             }
             var t = Task.WhenAll( taskList.ToArray() );
             await t;
         }
+
     }
 }

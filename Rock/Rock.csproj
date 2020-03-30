@@ -479,9 +479,12 @@
     <Compile Include="Transactions\RunReportTransaction.cs" />
     <Compile Include="Plugin\HotFixes\110_UpdateSpiritualGiftsResultsLava.cs" />
     <Compile Include="Plugin\HotFixes\111_HideGiftsCategoriesWithNoGifts.cs" />
+    <Compile Include="Utility\Enums\RockLogLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
+    <Compile Include="Utility\Interfaces\IRockLogConfiguration.cs" />
     <Compile Include="Utility\Logger.cs" />
+    <Compile Include="Utility\RockLogConfiguration.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

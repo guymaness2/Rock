@@ -1,4 +1,4 @@
-﻿namespace Rock.Utility.Enums
+﻿namespace Rock.Utility
 {
     public enum RockLogLevel
     {

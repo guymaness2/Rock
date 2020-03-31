@@ -1,56 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Utility.Enums;
-using Rock.Utility.Interfaces;
+using System.Runtime.CompilerServices;
 using Serilog;
 
 namespace Rock.Utility
 {
-    public class Logger
+    internal class RockLoggerSerilog : IRockLogger
     {
-        private static Logger log;
-        public static Logger Log
-        {
-            get
-            {
-                if ( log == null )
-                {
-                    // In the future the RockLogConfiguration could be gotten via dependency injection, but not today.
-                    log = new Logger( new RockLogConfiguration() );
-                }
-                return log;
-            }
-        }
-
         private const string DEFAULT_DOMAIN = "OTHER";
+        private DateTime ConfigurationLastLoaded;
 
         public IRockLogConfiguration LogConfiguration { get; private set; }
 
-        public Logger( IRockLogConfiguration rockLogConfiguration )
+        public RockLoggerSerilog( IRockLogConfiguration rockLogConfiguration )
         {
             LogConfiguration = rockLogConfiguration;
-
-            LogConfiguration.DomainsToLog.ForEach( s => s = s.ToUpper() );
-
-            Serilog.Log.Logger = new LoggerConfiguration()
-                 .MinimumLevel
-                 .Verbose()
-                 .WriteTo
-                 .File( rockLogConfiguration.LogPath,
-                     rollingInterval: RollingInterval.Infinite,
-                     buffered: true,
-                     shared: false,
-                     restrictedToMinimumLevel: GetLogEventLevelFromRockLogLevel( rockLogConfiguration.LogLevel ),
-                     retainedFileCountLimit: rockLogConfiguration.NumberOfLogFiles,
-                     rollOnFileSizeLimit: true,
-                     fileSizeLimitBytes: rockLogConfiguration.MaxFileSize * 1024 * 1024 )
-                 .Filter
-                 .ByIncludingOnly( ( e ) => ShouldLogDomain( e ) )
-                 .CreateLogger();
+            LoadConfiguration( LogConfiguration );
         }
 
-        ~Logger()
+        ~RockLoggerSerilog()
         {
             Serilog.Log.CloseAndFlush();
         }
@@ -68,11 +37,13 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, string domain, string messageTemplate )
         {
+            ReloadConfigurationIfNeeded();
+
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
                 return;
             }
-
+            
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
             Serilog.Log.Logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
         }
@@ -84,6 +55,8 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, string domain, string messageTemplate, params object[] propertyValues )
         {
+            ReloadConfigurationIfNeeded();
+
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
                 return;
@@ -100,6 +73,8 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string domain, string messageTemplate )
         {
+            ReloadConfigurationIfNeeded();
+
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
                 return;
@@ -116,6 +91,8 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string domain, string messageTemplate, params object[] propertyValues )
         {
+            ReloadConfigurationIfNeeded();
+
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
                 return;
@@ -423,6 +400,38 @@ namespace Rock.Utility
                 return false;
             }
             return LogConfiguration.DomainsToLog.Contains( domain.Value.ToString(), StringComparer.InvariantCultureIgnoreCase );
+        }
+
+        private void LoadConfiguration( IRockLogConfiguration rockLogConfiguration )
+        {
+            LogConfiguration.DomainsToLog.ForEach( s => s = s.ToUpper() );
+
+            Serilog.Log.Logger = new LoggerConfiguration()
+                 .MinimumLevel
+                 .Verbose()
+                 .WriteTo
+                 .File( rockLogConfiguration.LogPath,
+                     rollingInterval: RollingInterval.Infinite,
+                     buffered: true,
+                     shared: false,
+                     restrictedToMinimumLevel: GetLogEventLevelFromRockLogLevel( rockLogConfiguration.LogLevel ),
+                     retainedFileCountLimit: rockLogConfiguration.NumberOfLogFiles,
+                     rollOnFileSizeLimit: true,
+                     fileSizeLimitBytes: rockLogConfiguration.MaxFileSize * 1024 * 1024 )
+                 .Filter
+                 .ByIncludingOnly( ( e ) => ShouldLogDomain( e ) )
+                 .CreateLogger();
+
+            ConfigurationLastLoaded = DateTime.Now;
+        }
+
+        private void ReloadConfigurationIfNeeded()
+        {
+            if(ConfigurationLastLoaded < LogConfiguration.LastUpdated )
+            {
+                Close();
+                LoadConfiguration( LogConfiguration );
+            }
         }
         #endregion
     }

@@ -28,6 +28,8 @@ using System.Configuration;
 using Microsoft.Web.XmlTransform;
 using Rock.SystemKey;
 using System.Threading.Tasks;
+using System.Linq;
+using Rock.Utility;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -108,6 +110,9 @@ namespace RockWeb.Blocks.Administration
         private void ShowDetails()
         {
             BindGeneralConfiguration();
+
+            BindLoggingSettings();
+
             BindTimeZones();
 
             BindOtherAppSettings();
@@ -190,6 +195,30 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Text = "You will need to reload this page to continue.";
             }
         }
+
+        /// <summary>
+        /// Handles saving the general configuration set by the user to the database.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnLoggingSave_Click( object sender, EventArgs e )
+        {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            nbLoggingMessage.Visible = true;
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_LOG_LEVEL, rblVerbosityLevel.SelectedValue );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_SIZE, txtMaxFileSize.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_COUNT, txtFilesToRetain.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG, string.Join( ",", cblDomainsToLog.SelectedValues ) );
+
+            nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbLoggingMessage.Title = string.Empty;
+            nbLoggingMessage.Text = "Setting saved successfully.";
+        }
         #endregion
 
         #region Methods
@@ -202,6 +231,30 @@ namespace RockWeb.Blocks.Administration
             cbEnableMultipleTimeZone.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
         }
 
+        private void BindLoggingSettings()
+        {
+            var logLevel = Enum.GetNames( typeof( RockLogLevel ) );
+            rblVerbosityLevel.DataSource = logLevel;
+            rblVerbosityLevel.DataBind();
+
+            var currentLogLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_LOG_LEVEL );
+            if ( !string.IsNullOrWhiteSpace( currentLogLevel ) )
+            {
+                rblVerbosityLevel.SelectedValue = currentLogLevel;
+            }
+
+            txtFilesToRetain.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_FILE_COUNT );
+            txtMaxFileSize.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_FILE_SIZE );
+
+            var definedValues = new DefinedValueService( new Rock.Data.RockContext() ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOGGING_DOMAINS.AsGuid() );
+
+            cblDomainsToLog.DataSource = definedValues.ToList();
+            cblDomainsToLog.DataTextField = "Value";
+            cblDomainsToLog.DataValueField = "Value";
+            cblDomainsToLog.DataBind();
+
+            cblDomainsToLog.SetValues( Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG ).Split( ',' ) );
+        }
         /// <summary>
         /// Bind the available time zones and select the one that's configured in the
         /// web.config's OrgTimeZone setting.
@@ -337,7 +390,7 @@ namespace RockWeb.Blocks.Administration
 
                 nbStartDayOfWeekSaveMessage.NotificationBoxType = NotificationBoxType.Success;
                 nbStartDayOfWeekSaveMessage.Title = string.Empty;
-                nbStartDayOfWeekSaveMessage.Text = string.Format("Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString());
+                nbStartDayOfWeekSaveMessage.Text = string.Format( "Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString() );
             }
         }
     }

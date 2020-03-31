@@ -161,5 +161,10 @@ namespace Rock.SystemKey
         [Obsolete("This functionality is no longer used.")]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
+
+        public const string LOGGING_DOMAINS_TO_LOG = "logging_DomainsToLog";
+        public const string LOGGING_LOG_LEVEL = "logging_LogLevel";
+        public const string LOGGING_FILE_SIZE = "logging_LogFileSize";
+        public const string LOGGING_FILE_COUNT = "logging_LogFileCount";
     }
 }

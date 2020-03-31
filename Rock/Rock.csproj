@@ -483,7 +483,10 @@
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
     <Compile Include="Utility\Interfaces\IRockLogConfiguration.cs" />
-    <Compile Include="Utility\Logger.cs" />
+    <Compile Include="Utility\Interfaces\IRockLogger.cs" />
+    <Compile Include="Utility\RockLogDomains.cs" />
+    <Compile Include="Utility\RockLoggerSerilog.cs" />
+    <Compile Include="Utility\RockLogger.cs" />
     <Compile Include="Utility\RockLogConfiguration.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>

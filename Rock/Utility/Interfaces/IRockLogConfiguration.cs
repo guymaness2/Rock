@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Rock.Utility.Enums;
+﻿using System;
+using System.Collections.Generic;
 
-namespace Rock.Utility.Interfaces
+namespace Rock.Utility
 {
     public interface IRockLogConfiguration
     {
@@ -10,5 +10,6 @@ namespace Rock.Utility.Interfaces
         int NumberOfLogFiles { get; set; }
         List<string> DomainsToLog { get; set; }
         string LogPath { get; set; }
+        DateTime LastUpdated { get; set; }
     }
 }

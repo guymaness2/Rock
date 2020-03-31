@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Tests.Integration.Utility;
 using Rock.Utility;
-using Rock.Utility.Enums;
-using Rock.Utility.Interfaces;
 
-namespace Rock.Tests.Integration.Utility
+namespace Rock.Tests.Integration
 {
     public static class AssertExtensions
     {
@@ -107,7 +106,7 @@ namespace Rock.Tests.Integration.Utility
     }
 
     [TestClass]
-    public class LoggerTests
+    public class RockLoggerSerilogTests
     {
         private const string LOG_FOLDER = "\\logs";
         private const string TEST_LOGGER_CONFIG_SERIALIZATION = "{\"LogLevel\":\"All\",\"MaxFileSize\":1,\"NumberOfLogFiles\":2,\"DomainsToLog\":[\"OTHER\",\"crm\"],\"LogPath\":\"{logPath}\",\"$type\":\"RockLogConfiguration\"}";
@@ -138,6 +137,34 @@ namespace Rock.Tests.Integration.Utility
         }
 
         [TestMethod]
+        public void LoggerShouldUpdateMaxFileCountAutomatically()
+        {
+            var originalLogFolder = "AutoMaxFileTest1";
+            var originalLogCount = 5;
+
+            var expectedLogFolder = "AutoMaxFileTest2";
+            var expectedLogCount = 3;
+
+            var logger = GetTestLogger( logFolder: originalLogFolder, numberOfLogFiles: originalLogCount );
+
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
+
+            logger.LogConfiguration.LogPath = $"{expectedLogFolder}\\{Guid.NewGuid()}.log";
+            logger.LogConfiguration.NumberOfLogFiles = expectedLogCount;
+            logger.LogConfiguration.LastUpdated = DateTime.Now;
+
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
+
+            logger.Close();
+
+            var logFolderPath = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( logger.LogConfiguration.LogPath ) );
+
+            Assert.That.FolderHasCorrectNumberOfFiles( logFolderPath, logger.LogConfiguration.NumberOfLogFiles );
+
+            DeleteFilesInFolder( logFolderPath );
+        }
+
+        [TestMethod]
         public void LoggerLogFileSizeShouldBeWithinRange()
         {
             var logger = GetTestLogger( logFolder: "MaxFileSizeTest", numberOfLogFiles: 10 );
@@ -145,6 +172,34 @@ namespace Rock.Tests.Integration.Utility
             var onePercentVariation = .01;
 
             CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles );
+
+            logger.Close();
+
+            var logFolderPath = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( logger.LogConfiguration.LogPath ) );
+
+            Assert.That.FolderFileSizeIsWithinRange( logFolderPath, 0, expectedMaxFileSize, onePercentVariation );
+
+            DeleteFilesInFolder( logFolderPath );
+        }
+
+        [TestMethod]
+        public void LoggerShouldUpdateFileSizeAutomatically()
+        {
+            var originalLogFolder = "AutoMaxFileSizeTest1";
+            var originalLogSize = 5;
+
+            var expectedLogFolder = "AutoMaxFileSizeTest2";
+            var expectedLogSize = 3;
+
+            var logger = GetTestLogger( logFolder: originalLogFolder, numberOfLogFiles: 10, logSize: originalLogSize );
+            var expectedMaxFileSize = logger.LogConfiguration.MaxFileSize * 1024 * 1024;
+            var onePercentVariation = .01;
+
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles );
+
+            logger.LogConfiguration.LogPath = $"{expectedLogFolder}\\{Guid.NewGuid()}.log";
+            logger.LogConfiguration.MaxFileSize = expectedLogSize;
+            logger.LogConfiguration.LastUpdated = DateTime.Now;
 
             logger.Close();
 
@@ -852,6 +907,33 @@ namespace Rock.Tests.Integration.Utility
             }
         }
 
+        [TestMethod]
+        public void LoggerShouldAutomaticallyStartLoggingAdditionalDomainsAddedToList()
+        {
+            var logger = GetTestLogger( domainsToLog: new List<string> { "other" } );
+
+            var logGuid = $"{Guid.NewGuid()}";
+            logger.Warning( logGuid );
+            var expectedLogMessage = $"OTHER {logGuid}";
+
+            logGuid = $"{Guid.NewGuid()}";
+            logger.Warning( "CRM", logGuid );
+            var excludedLogMessage = $"CRM {logGuid}";
+
+            logger.LogConfiguration.DomainsToLog.Add( "CRM" );
+            logger.LogConfiguration.LastUpdated = DateTime.Now;
+
+            logGuid = $"{Guid.NewGuid()}";
+            logger.Warning( "CRM", logGuid );
+            var expectedLogMessage2 = $"CRM {logGuid}";
+
+            logger.Close();
+
+            Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedLogMessage );
+            Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedLogMessage2 );
+            Assert.That.FileDoesNotContains( logger.LogConfiguration.LogPath, excludedLogMessage );
+        }
+
         #region Private Helper Code
         private static void DeleteFilesInFolder( string logFolder )
         {
@@ -877,7 +959,7 @@ namespace Rock.Tests.Integration.Utility
             }
         }
 
-        private Logger GetTestLogger( string logFolder = LOG_FOLDER, List<string> domainsToLog = null, RockLogLevel logLevel = RockLogLevel.All, int numberOfLogFiles = 2 )
+        private IRockLogger GetTestLogger( string logFolder = LOG_FOLDER, List<string> domainsToLog = null, RockLogLevel logLevel = RockLogLevel.All, int numberOfLogFiles = 2, int logSize = 1 )
         {
             if ( domainsToLog == null )
             {
@@ -887,15 +969,16 @@ namespace Rock.Tests.Integration.Utility
             var config = new RockLogConfiguration
             {
                 LogLevel = logLevel,
-                MaxFileSize = 1,
+                MaxFileSize = logSize,
                 NumberOfLogFiles = numberOfLogFiles,
                 DomainsToLog = domainsToLog,
-                LogPath = $"{logFolder}\\{Guid.NewGuid()}.log"
+                LogPath = $"{logFolder}\\{Guid.NewGuid()}.log",
+                LastUpdated = DateTime.Now
             };
-            return new Logger( config );
+            return ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Utility.RockLoggerSerilog", config );
         }
 
-        private static void CreateLogFiles( Logger logger, int maxFilesizeInMB, int numberOfFiles )
+        private static void CreateLogFiles( IRockLogger logger, int maxFilesizeInMB, int numberOfFiles )
         {
             var maxByteCount = maxFilesizeInMB * 1024 * 1024 * numberOfFiles;
             var currentByteCount = 0;
@@ -917,6 +1000,7 @@ namespace Rock.Tests.Integration.Utility
             public int NumberOfLogFiles { get; set; }
             public List<string> DomainsToLog { get; set; }
             public string LogPath { get; set; }
+            public DateTime LastUpdated { get; set; }
         }
         #endregion
     }

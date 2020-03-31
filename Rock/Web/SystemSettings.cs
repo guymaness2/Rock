@@ -19,7 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Threading;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -44,7 +44,37 @@ namespace Rock.Web
         /// </value>
         [DataMember]
         private ConcurrentDictionary<string, string> SystemSettingsValues { get; set; } = new ConcurrentDictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+        private DateTime concurrentDateTime;
+        private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
 
+        private DateTime ConcurrentLastUpdated
+        {
+            get
+            {
+
+                cacheLock.EnterReadLock();
+                try
+                {
+                    return concurrentDateTime;
+                }
+                finally
+                {
+                    cacheLock.ExitReadLock();
+                }
+            }
+            set
+            {
+                cacheLock.EnterWriteLock();
+                try
+                {
+                    concurrentDateTime = value;
+                }
+                finally
+                {
+                    cacheLock.ExitWriteLock();
+                }
+            }
+        }
         #endregion
 
         #region Static Methods
@@ -91,6 +121,14 @@ namespace Rock.Web
         }
 
         private static DayOfWeek? startDayOfWeekCache;
+
+        public static DateTime LastUpdated
+        {
+            get
+            {
+                return Get().ConcurrentLastUpdated;
+            }
+        }
 
         /// <summary>
         /// Gets the System Settings values for the specified key.
@@ -234,6 +272,7 @@ namespace Rock.Web
                 systemSettings.SystemSettingsValues = new ConcurrentDictionary<string, string>( keyValueLookup, StringComparer.OrdinalIgnoreCase );
             }
 
+            systemSettings.ConcurrentLastUpdated = DateTime.Now;
             return systemSettings;
         }
 
@@ -260,5 +299,15 @@ namespace Rock.Web
 
         #endregion
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="SystemSettings"/> class.
+        /// </summary>
+        ~SystemSettings()
+        {
+            if ( cacheLock != null )
+            {
+                cacheLock.Dispose();
+            }
+        }
     }
 }

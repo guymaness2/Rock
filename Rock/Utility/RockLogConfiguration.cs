@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Model;
+using System.Web;
 using Rock.SystemKey;
 
 namespace Rock.Utility
@@ -85,6 +85,8 @@ namespace Rock.Utility
                             .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                             .ToList();
 
+            LogPath = System.IO.Path.Combine( HttpRuntime.AppDomainAppPath, "App_Data\\Logs\\Rock.log" );
+
             LastUpdated = DateTime.Now;
         }
 
@@ -104,11 +106,12 @@ namespace Rock.Utility
             {
                 var logLevel = Enum.Parse( typeof( RockLogLevel ), currentLogLevel );
                 return ( RockLogLevel ) logLevel;
-            } catch
+            }
+            catch
             {
                 return RockLogLevel.Off;
             }
-            
+
         }
     }
 }

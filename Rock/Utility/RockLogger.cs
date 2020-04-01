@@ -1,4 +1,6 @@
-﻿namespace Rock.Utility
+﻿using System.Web;
+
+namespace Rock.Utility
 {
     public static class RockLogger
     {

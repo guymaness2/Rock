@@ -27,7 +27,11 @@ namespace Rock.Utility
 
         public void Close()
         {
-            ( ( IDisposable ) logger ).Dispose();
+            if ( logger != null )
+            {
+                ( ( IDisposable ) logger ).Dispose();
+                logger = null;
+            }
         }
 
         #region WriteToLog Methods
@@ -38,7 +42,7 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, string domain, string messageTemplate )
         {
-            ReloadConfigurationIfNeeded();
+            EnsureLoggerExistsAndUpdated();
 
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
@@ -56,7 +60,7 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, string domain, string messageTemplate, params object[] propertyValues )
         {
-            ReloadConfigurationIfNeeded();
+            EnsureLoggerExistsAndUpdated();
 
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
@@ -74,7 +78,7 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string domain, string messageTemplate )
         {
-            ReloadConfigurationIfNeeded();
+            EnsureLoggerExistsAndUpdated();
 
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
@@ -92,7 +96,7 @@ namespace Rock.Utility
 
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string domain, string messageTemplate, params object[] propertyValues )
         {
-            ReloadConfigurationIfNeeded();
+            EnsureLoggerExistsAndUpdated();
 
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
             {
@@ -426,9 +430,9 @@ namespace Rock.Utility
             ConfigurationLastLoaded = DateTime.Now;
         }
 
-        private void ReloadConfigurationIfNeeded()
+        private void EnsureLoggerExistsAndUpdated()
         {
-            if ( ConfigurationLastLoaded < LogConfiguration.LastUpdated )
+            if ( ConfigurationLastLoaded < LogConfiguration.LastUpdated || logger == null )
             {
                 Close();
                 LoadConfiguration( LogConfiguration );

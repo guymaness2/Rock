@@ -24,7 +24,7 @@ namespace Rock.Tests.Integration
 
             var file = System.IO.File.ReadAllText( filePath );
             var fileContainsExpectedString = file.Contains( expectedString );
-
+            
             if ( !fileContainsExpectedString )
             {
                 throw new AssertFailedException( $"File {filePath} did not contain '{expectedString}'." );
@@ -142,6 +142,21 @@ namespace Rock.Tests.Integration
         public void Cleanup()
         {
             DeleteFilesInFolder( LogFolder );
+        }
+
+        [TestMethod]
+        public void LoggerShouldContinueToWorkEvenIfClosed()
+        {
+            var logger = GetTestLogger();
+
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
+
+            logger.Close();
+
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
+
+            // The lack of an assert is valid here because if it runs without an exception everything is fine.
+            // The logger.Close() calls dispose on the actual logger object and we want to make sure the class re-initializes it as necessary.
         }
 
         [TestMethod]

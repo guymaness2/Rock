@@ -56,6 +56,14 @@
                             DataLoadingText="Saving..."
                             ValidationGroup="LoggingSetting"
                             OnClick="btnLoggingSave_Click" />
+
+                        <Rock:BootstrapButton
+                            ID="btnFlushLog"
+                            runat="server"
+                            CssClass="btn btn-link"
+                            Text="Flush Log"
+                            DataLoadingText="Flushing Log ..."
+                            OnClick="btnLoggingFlush_Click" />
                     </div>
                 </Rock:PanelWidget>
 

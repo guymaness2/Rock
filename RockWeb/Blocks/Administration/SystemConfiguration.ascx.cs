@@ -96,9 +96,6 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 ShowDetails();
-
-
-
             }
 
             lTitle.Text = ( "Edit System Configuration" ).FormatAsHtmlTitle();
@@ -195,12 +192,7 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Text = "You will need to reload this page to continue.";
             }
         }
-
-        /// <summary>
-        /// Handles saving the general configuration set by the user to the database.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        
         protected void btnLoggingSave_Click( object sender, EventArgs e )
         {
             if ( !Page.IsValid )
@@ -218,6 +210,17 @@ namespace RockWeb.Blocks.Administration
             nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
             nbLoggingMessage.Title = string.Empty;
             nbLoggingMessage.Text = "Setting saved successfully.";
+        }
+
+        protected void btnLoggingFlush_Click( object sender, EventArgs e )
+        {
+            nbLoggingMessage.Visible = true;
+
+            RockLogger.Log.Close();
+
+            nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbLoggingMessage.Title = string.Empty;
+            nbLoggingMessage.Text = "The buffered logs were successfully flushed out to the log file.";
         }
         #endregion
 

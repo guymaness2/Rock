@@ -108,23 +108,48 @@ namespace Rock.Tests.Integration
     [TestClass]
     public class RockLoggerSerilogTests
     {
-        private const string LOG_FOLDER = "\\logs";
-        private const string TEST_LOGGER_CONFIG_SERIALIZATION = "{\"LogLevel\":\"All\",\"MaxFileSize\":1,\"NumberOfLogFiles\":2,\"DomainsToLog\":[\"OTHER\",\"crm\"],\"LogPath\":\"{logPath}\",\"$type\":\"RockLogConfiguration\"}";
+        private TestContext testContextInstance;
+
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext
+        {
+            get
+            {
+                return testContextInstance;
+            }
+            set
+            {
+                testContextInstance = value;
+            }
+        }
+
+        private const string TEST_LOGGER_CONFIG_SERIALIZATION = "{\"LogLevel\":\"All\",\"MaxFileSize\":1,\"NumberOfLogFiles\":1,\"DomainsToLog\":[\"OTHER\",\"crm\"],\"LogPath\":\"logs\\\\rock.log\",\"LastUpdated\":\"2020-04-01T11:11:11.0000000\",\"$type\":\"RockLogConfiguration\"}";
         private const string TEST_EXCEPTION_SERIALIZATION = "\r\nSystem.Exception: Test Exception";
 
         private readonly Exception TestException = new Exception( "Test Exception" );
+        private readonly RockLogConfiguration ObjectToLog;
+        private readonly string LogFolder = $"\\logs\\{Guid.NewGuid()}";
+
+        public RockLoggerSerilogTests()
+        {
+            ObjectToLog = GetTestObjectToSerialize();
+        }
 
         [TestCleanup]
         public void Cleanup()
         {
-            DeleteFilesInFolder( LOG_FOLDER );
+            DeleteFilesInFolder( LogFolder );
         }
 
         [TestMethod]
         public void LoggerShouldKeepOnlyMaxFileCount()
         {
-            var logger = GetTestLogger( logFolder: "MaxFileTest" );
+            var logger = GetTestLogger();
 
+            TestContext.WriteLine( "Running LoggerShouldKeepOnlyMaxFileCount MaxFileSize: {0}; MaxFileCount: {1}", logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles );
             CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
 
             logger.Close();
@@ -132,17 +157,15 @@ namespace Rock.Tests.Integration
             var logFolderPath = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( logger.LogConfiguration.LogPath ) );
 
             Assert.That.FolderHasCorrectNumberOfFiles( logFolderPath, logger.LogConfiguration.NumberOfLogFiles );
-
-            DeleteFilesInFolder( logFolderPath );
         }
 
         [TestMethod]
         public void LoggerShouldUpdateMaxFileCountAutomatically()
         {
-            var originalLogFolder = "AutoMaxFileTest1";
+            var originalLogFolder = $"{LogFolder}\\{System.Guid.NewGuid()}";
             var originalLogCount = 5;
 
-            var expectedLogFolder = "AutoMaxFileTest2";
+            var expectedLogFolder = $"{LogFolder}\\{System.Guid.NewGuid()}";
             var expectedLogCount = 3;
 
             var logger = GetTestLogger( logFolder: originalLogFolder, numberOfLogFiles: originalLogCount );
@@ -160,14 +183,12 @@ namespace Rock.Tests.Integration
             var logFolderPath = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( logger.LogConfiguration.LogPath ) );
 
             Assert.That.FolderHasCorrectNumberOfFiles( logFolderPath, logger.LogConfiguration.NumberOfLogFiles );
-
-            DeleteFilesInFolder( logFolderPath );
         }
 
         [TestMethod]
         public void LoggerLogFileSizeShouldBeWithinRange()
         {
-            var logger = GetTestLogger( logFolder: "MaxFileSizeTest", numberOfLogFiles: 10 );
+            var logger = GetTestLogger( numberOfLogFiles: 10 );
             var expectedMaxFileSize = logger.LogConfiguration.MaxFileSize * 1024 * 1024;
             var onePercentVariation = .01;
 
@@ -178,36 +199,41 @@ namespace Rock.Tests.Integration
             var logFolderPath = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( logger.LogConfiguration.LogPath ) );
 
             Assert.That.FolderFileSizeIsWithinRange( logFolderPath, 0, expectedMaxFileSize, onePercentVariation );
-
-            DeleteFilesInFolder( logFolderPath );
         }
 
         [TestMethod]
         public void LoggerShouldUpdateFileSizeAutomatically()
         {
-            var originalLogFolder = "AutoMaxFileSizeTest1";
+            var originalLogFolder = $"{LogFolder}\\{System.Guid.NewGuid()}";
             var originalLogSize = 5;
 
-            var expectedLogFolder = "AutoMaxFileSizeTest2";
+            var expectedLogFolder = $"{LogFolder}\\{System.Guid.NewGuid()}";
             var expectedLogSize = 3;
 
             var logger = GetTestLogger( logFolder: originalLogFolder, numberOfLogFiles: 10, logSize: originalLogSize );
             var expectedMaxFileSize = logger.LogConfiguration.MaxFileSize * 1024 * 1024;
             var onePercentVariation = .01;
-
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles );
+            TestContext.WriteLine( "Log Creation 1 took {0} ms.", sw.ElapsedMilliseconds );
 
             logger.LogConfiguration.LogPath = $"{expectedLogFolder}\\{Guid.NewGuid()}.log";
             logger.LogConfiguration.MaxFileSize = expectedLogSize;
             logger.LogConfiguration.LastUpdated = DateTime.Now;
 
+            sw = System.Diagnostics.Stopwatch.StartNew();
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles );
+            TestContext.WriteLine( "Log Creation 2 took {0} ms.", sw.ElapsedMilliseconds );
+
+            sw = System.Diagnostics.Stopwatch.StartNew();
             logger.Close();
+            TestContext.WriteLine( "Logger Close took {0} ms.", sw.ElapsedMilliseconds );
 
             var logFolderPath = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( logger.LogConfiguration.LogPath ) );
 
+            sw = System.Diagnostics.Stopwatch.StartNew();
             Assert.That.FolderFileSizeIsWithinRange( logFolderPath, 0, expectedMaxFileSize, onePercentVariation );
-
-            DeleteFilesInFolder( logFolderPath );
+            TestContext.WriteLine( "FolderFileSizeIsWithinRange took {0} ms.", sw.ElapsedMilliseconds );
         }
 
         [TestMethod]
@@ -216,7 +242,7 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
-            var expectedSerializedConfig = TEST_LOGGER_CONFIG_SERIALIZATION.Replace( "{logPath}", logger.LogConfiguration.LogPath.Replace( "\\", "\\\\" ) );
+
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
@@ -227,12 +253,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Verbose( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Verbose( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Verbose( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Verbose( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( TestException, $"{logGuid}" );
@@ -243,12 +269,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Verbose( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Verbose( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Verbose( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Verbose( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logger.Close();
 
@@ -262,10 +288,9 @@ namespace Rock.Tests.Integration
         public void LoggerDebugShouldLogCorrectly()
         {
             var logger = GetTestLogger();
-
             var expectedLogMessages = new List<string>();
-            var expectedSerializedConfig = TEST_LOGGER_CONFIG_SERIALIZATION.Replace( "{logPath}", logger.LogConfiguration.LogPath.Replace( "\\", "\\\\" ) );
             var logGuid = $"{Guid.NewGuid()}";
+
             logger.Debug( logGuid );
             expectedLogMessages.Add( $"OTHER {logGuid}" );
 
@@ -274,12 +299,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Debug( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Debug( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Debug( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Debug( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( TestException, $"{logGuid}" );
@@ -290,12 +315,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Debug( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Debug( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Debug( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Debug( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logger.Close();
 
@@ -311,7 +336,7 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
-            var expectedSerializedConfig = TEST_LOGGER_CONFIG_SERIALIZATION.Replace( "{logPath}", logger.LogConfiguration.LogPath.Replace( "\\", "\\\\" ) );
+
             var logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
             expectedLogMessages.Add( $"OTHER {logGuid}" );
@@ -321,12 +346,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Information( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Information( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Information( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Information( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( TestException, $"{logGuid}" );
@@ -337,12 +362,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Information( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Information( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Information( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Information( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logger.Close();
 
@@ -358,7 +383,7 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
-            var expectedSerializedConfig = TEST_LOGGER_CONFIG_SERIALIZATION.Replace( "{logPath}", logger.LogConfiguration.LogPath.Replace( "\\", "\\\\" ) );
+
             var logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
             expectedLogMessages.Add( $"OTHER {logGuid}" );
@@ -368,12 +393,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Warning( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Warning( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Warning( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Warning( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( TestException, $"{logGuid}" );
@@ -384,12 +409,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Warning( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Warning( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Warning( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Warning( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logger.Close();
 
@@ -405,7 +430,7 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
-            var expectedSerializedConfig = TEST_LOGGER_CONFIG_SERIALIZATION.Replace( "{logPath}", logger.LogConfiguration.LogPath.Replace( "\\", "\\\\" ) );
+
             var logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
             expectedLogMessages.Add( $"OTHER {logGuid}" );
@@ -415,12 +440,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Error( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Error( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Error( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Error( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( TestException, $"{logGuid}" );
@@ -431,12 +456,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Error( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Error( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Error( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Error( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logger.Close();
 
@@ -452,7 +477,7 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
-            var expectedSerializedConfig = TEST_LOGGER_CONFIG_SERIALIZATION.Replace( "{logPath}", logger.LogConfiguration.LogPath.Replace( "\\", "\\\\" ) );
+
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
             expectedLogMessages.Add( $"OTHER {logGuid}" );
@@ -462,12 +487,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Fatal( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Fatal( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Fatal( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"" );
+            logger.Fatal( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( TestException, $"{logGuid}" );
@@ -478,12 +503,12 @@ namespace Rock.Tests.Integration
             expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Fatal( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Fatal( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logGuid = $"{Guid.NewGuid()}";
-            logger.Fatal( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", logger.LogConfiguration, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {expectedSerializedConfig} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            logger.Fatal( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
+            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
 
             logger.Close();
 
@@ -935,10 +960,15 @@ namespace Rock.Tests.Integration
         }
 
         #region Private Helper Code
-        private static void DeleteFilesInFolder( string logFolder )
+        private void DeleteFilesInFolder( string logFolder )
         {
             var logFolderPath = System.IO.Path.GetFullPath( logFolder );
-            var files = System.IO.Directory.GetFiles( logFolderPath );
+            if ( !System.IO.Directory.Exists( logFolderPath ) )
+            {
+                return;
+            }
+
+            var files = System.IO.Directory.GetFiles( logFolderPath, "*.*", System.IO.SearchOption.AllDirectories );
             var retryCount = 2;
             foreach ( var file in files )
             {
@@ -953,14 +983,32 @@ namespace Rock.Tests.Integration
                     {
                         Thread.SpinWait( 1000 );
                     }
-
                 }
-
             }
+
+            System.IO.Directory.Delete( logFolder, true );
         }
 
-        private IRockLogger GetTestLogger( string logFolder = LOG_FOLDER, List<string> domainsToLog = null, RockLogLevel logLevel = RockLogLevel.All, int numberOfLogFiles = 2, int logSize = 1 )
+        private RockLogConfiguration GetTestObjectToSerialize()
         {
+            return new RockLogConfiguration
+            {
+                LogLevel = RockLogLevel.All,
+                LastUpdated = new DateTime( 2020, 04, 01, 11, 11, 11 ),
+                LogPath = "logs\\rock.log",
+                DomainsToLog = new List<string> { "OTHER", "crm" },
+                MaxFileSize = 1,
+                NumberOfLogFiles = 1
+            };
+        }
+
+        private IRockLogger GetTestLogger( string logFolder = "", List<string> domainsToLog = null, RockLogLevel logLevel = RockLogLevel.All, int numberOfLogFiles = 2, int logSize = 1 )
+        {
+            if ( string.IsNullOrWhiteSpace( logFolder ) )
+            {
+                logFolder = LogFolder;
+            }
+
             if ( domainsToLog == null )
             {
                 domainsToLog = new List<string> { "OTHER", "crm" };
@@ -978,7 +1026,7 @@ namespace Rock.Tests.Integration
             return ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Utility.RockLoggerSerilog", config );
         }
 
-        private static void CreateLogFiles( IRockLogger logger, int maxFilesizeInMB, int numberOfFiles )
+        private void CreateLogFiles( IRockLogger logger, int maxFilesizeInMB, int numberOfFiles )
         {
             var maxByteCount = maxFilesizeInMB * 1024 * 1024 * numberOfFiles;
             var currentByteCount = 0;
@@ -991,6 +1039,7 @@ namespace Rock.Tests.Integration
 
                 currentByteCount += Encoding.ASCII.GetByteCount( $"{logHeaderInformation} {expectedLogMessage}" );
             }
+            TestContext.WriteLine( "CreateLogFiles wrote {0} bytes of logs to {1}.", currentByteCount, logger.LogConfiguration.LogPath );
         }
 
         private class RockLogConfiguration : IRockLogConfiguration

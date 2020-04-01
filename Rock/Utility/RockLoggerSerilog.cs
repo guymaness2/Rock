@@ -10,6 +10,7 @@ namespace Rock.Utility
     {
         private const string DEFAULT_DOMAIN = "OTHER";
         private DateTime ConfigurationLastLoaded;
+        private ILogger logger;
 
         public IRockLogConfiguration LogConfiguration { get; private set; }
 
@@ -21,12 +22,12 @@ namespace Rock.Utility
 
         ~RockLoggerSerilog()
         {
-            Serilog.Log.CloseAndFlush();
+            ( ( IDisposable ) logger ).Dispose();
         }
 
         public void Close()
         {
-            Serilog.Log.CloseAndFlush();
+            ( ( IDisposable ) logger ).Dispose();
         }
 
         #region WriteToLog Methods
@@ -43,9 +44,9 @@ namespace Rock.Utility
             {
                 return;
             }
-            
+
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            Serilog.Log.Logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
+            logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
         }
 
         public void WriteToLog( RockLogLevel logLevel, string messageTemplate, params object[] propertyValues )
@@ -63,7 +64,7 @@ namespace Rock.Utility
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            Serilog.Log.Logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
+            logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
         }
 
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string messageTemplate )
@@ -81,7 +82,7 @@ namespace Rock.Utility
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            Serilog.Log.Logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
+            logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
         }
 
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string messageTemplate, params object[] propertyValues )
@@ -99,7 +100,7 @@ namespace Rock.Utility
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            Serilog.Log.Logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
+            logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
         }
         #endregion
 
@@ -406,7 +407,7 @@ namespace Rock.Utility
         {
             LogConfiguration.DomainsToLog.ForEach( s => s = s.ToUpper() );
 
-            Serilog.Log.Logger = new LoggerConfiguration()
+            logger = new LoggerConfiguration()
                  .MinimumLevel
                  .Verbose()
                  .WriteTo
@@ -427,7 +428,7 @@ namespace Rock.Utility
 
         private void ReloadConfigurationIfNeeded()
         {
-            if(ConfigurationLastLoaded < LogConfiguration.LastUpdated )
+            if ( ConfigurationLastLoaded < LogConfiguration.LastUpdated )
             {
                 Close();
                 LoadConfiguration( LogConfiguration );

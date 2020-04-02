@@ -157,6 +157,22 @@
     <Compile Include="Migrations\202003260007389_HideGiftsCategoriesWithNoGifts.Designer.cs">
       <DependentUpon>202003260007389_HideGiftsCategoriesWithNoGifts.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003272101584_XamlTemplateMigration.cs" />
+    <Compile Include="Migrations\202003272101584_XamlTemplateMigration.Designer.cs">
+      <DependentUpon>202003272101584_XamlTemplateMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003272152299_RenameInteractionComponentChannelId.cs" />
+    <Compile Include="Migrations\202003272152299_RenameInteractionComponentChannelId.Designer.cs">
+      <DependentUpon>202003272152299_RenameInteractionComponentChannelId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003311924098_Rollup_0331.cs" />
+    <Compile Include="Migrations\202003311924098_Rollup_0331.Designer.cs">
+      <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004011934123_PageViews.cs" />
+    <Compile Include="Migrations\202004011934123_PageViews.Designer.cs">
+      <DependentUpon>202004011934123_PageViews.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\202003302017501_AddLoggingDefinedTypesAndAttributes.cs" />
     <Compile Include="Migrations\202003302017501_AddLoggingDefinedTypesAndAttributes.Designer.cs">
       <DependentUpon>202003302017501_AddLoggingDefinedTypesAndAttributes.cs</DependentUpon>
@@ -1215,6 +1231,18 @@
     <EmbeddedResource Include="Migrations\202003260007389_HideGiftsCategoriesWithNoGifts.resx">
       <DependentUpon>202003260007389_HideGiftsCategoriesWithNoGifts.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003272101584_XamlTemplateMigration.resx">
+      <DependentUpon>202003272101584_XamlTemplateMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003272152299_RenameInteractionComponentChannelId.resx">
+      <DependentUpon>202003272152299_RenameInteractionComponentChannelId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003311924098_Rollup_0331.resx">
+      <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004011934123_PageViews.resx">
+      <DependentUpon>202004011934123_PageViews.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202003302017501_AddLoggingDefinedTypesAndAttributes.resx">
       <DependentUpon>202003302017501_AddLoggingDefinedTypesAndAttributes.cs</DependentUpon>
     </EmbeddedResource>
@@ -1994,6 +2022,7 @@
     <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees_down.sql">
       <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql" />
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
     </Content>

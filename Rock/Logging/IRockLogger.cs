@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rock.Utility
+namespace Rock.Logging
 {
     public interface IRockLogger
     {

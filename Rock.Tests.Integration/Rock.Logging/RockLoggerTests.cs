@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Logging;
 using Rock.SystemKey;
-using Rock.Utility;
 
-namespace Rock.Tests.Integration
+namespace Rock.Tests.Integration.Logging
 {
     [TestClass]
     public class RockLoggerTests

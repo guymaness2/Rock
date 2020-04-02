@@ -90,10 +90,10 @@
     <Compile Include="Model\MetricValueTests.cs" />
     <Compile Include="Model\RegistrationTests.cs" />
     <Compile Include="Model\StepTests.cs" />
-    <Compile Include="Rock.Utility\RockLogConfigurationTest.cs" />
-    <Compile Include="Rock.Utility\RockLoggerTests.cs" />
+    <Compile Include="Rock.Logging\RockLogConfigurationTest.cs" />
+    <Compile Include="Rock.Logging\RockLoggerTests.cs" />
     <Compile Include="Utility\HttpSimulator.cs" />
-    <Compile Include="Rock.Utility\RockLoggerSerilogTests.cs" />
+    <Compile Include="Rock.Logging\RockLoggerSerilogTests.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />
     <Compile Include="Rest\ControllersTests\AttendanceControllerTests.cs" />

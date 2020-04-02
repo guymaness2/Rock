@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Logging;
 using Rock.Tests.Integration.Utility;
-using Rock.Utility;
 
-namespace Rock.Tests.Integration
+namespace Rock.Tests.Integration.Logging
 {
     public static class AssertExtensions
     {
@@ -1075,7 +1075,7 @@ namespace Rock.Tests.Integration
                 LogPath = $"{logFolder}\\{Guid.NewGuid()}.log",
                 LastUpdated = DateTime.Now
             };
-            return ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Utility.RockLoggerSerilog", config );
+            return ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
         }
 
         private void CreateLogFiles( IRockLogger logger, int maxFilesizeInMB, int numberOfFiles )

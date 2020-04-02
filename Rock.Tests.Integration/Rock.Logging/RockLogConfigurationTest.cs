@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Utility;
-using Rock.Tests.Integration.Utility;
+using Rock.Logging;
 using Rock.SystemKey;
+using Rock.Tests.Integration.Utility;
 
-namespace Rock.Tests.Integration
+namespace Rock.Tests.Integration.Logging
 {
     /// <summary>
     /// Summary description for RockLogConfiguration
@@ -23,7 +22,7 @@ namespace Rock.Tests.Integration
             {
                 Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_LOG_LEVEL, expectedLogLevel.ToString() );
 
-                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
                 Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
                 Assert.AreEqual( expectedLogLevel, rockLogConfig.LogLevel );
@@ -35,7 +34,7 @@ namespace Rock.Tests.Integration
         {
             Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_LOG_LEVEL, "garbage" );
 
-            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
             Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
             Assert.AreEqual( RockLogLevel.Off, rockLogConfig.LogLevel );
@@ -50,7 +49,7 @@ namespace Rock.Tests.Integration
 
                 Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_SIZE, expectedFileSize.ToString() );
 
-                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
                 Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
                 Assert.AreEqual( expectedFileSize, rockLogConfig.MaxFileSize );
@@ -64,7 +63,7 @@ namespace Rock.Tests.Integration
 
             Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_SIZE, "garbage" );
 
-            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
             Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
             Assert.AreEqual( expectedFileSize, rockLogConfig.MaxFileSize );
@@ -79,7 +78,7 @@ namespace Rock.Tests.Integration
 
                 Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_COUNT, expectedFileCount.ToString() );
 
-                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
                 Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
                 Assert.AreEqual( expectedFileCount, rockLogConfig.NumberOfLogFiles );
@@ -93,7 +92,7 @@ namespace Rock.Tests.Integration
 
             Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_COUNT, "garbage" );
 
-            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
             Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
             Assert.AreEqual( expectedFileCount, rockLogConfig.NumberOfLogFiles );
@@ -106,7 +105,7 @@ namespace Rock.Tests.Integration
             {
                 Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG, string.Join( ",", expectedDomains ) );
 
-                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
                 Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
                 CollectionAssert.AreEquivalent( expectedDomains, rockLogConfig.DomainsToLog );
@@ -145,7 +144,7 @@ namespace Rock.Tests.Integration
             Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_COUNT, expectedFileCount.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG, string.Join( ",", expectedDomains ) );
 
-            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
             Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
             Assert.AreEqual( expectedLogLevel, rockLogConfig.LogLevel );
@@ -172,7 +171,7 @@ namespace Rock.Tests.Integration
             Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_COUNT, originalFileCount.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG, string.Join( ",", originalDomains ) );
 
-            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Utility.RockLogConfiguration" );
+            var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
             Assert.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
 

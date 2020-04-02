@@ -26,6 +26,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;

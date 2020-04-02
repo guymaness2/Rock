@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using Serilog;
 using Serilog.Formatting.Compact;
 
-namespace Rock.Utility
+namespace Rock.Logging
 {
     internal class RockLoggerSerilog : IRockLogger
     {

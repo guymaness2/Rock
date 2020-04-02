@@ -1,6 +1,6 @@
 ﻿using System.Web;
 
-namespace Rock.Utility
+namespace Rock.Logging
 {
     public static class RockLogger
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using Rock.SystemKey;
 
-namespace Rock.Utility
+namespace Rock.Logging
 {
     internal class RockLogConfiguration : IRockLogConfiguration
     {

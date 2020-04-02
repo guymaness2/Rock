@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Rock.Utility
+namespace Rock.Logging
 {
     public interface IRockLogConfiguration
     {

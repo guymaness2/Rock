@@ -16,6 +16,7 @@
 //
 namespace Rock.Migrations
 {
+    using Rock.Logging;
     using Rock.SystemKey;
     using Rock.Utility;
 

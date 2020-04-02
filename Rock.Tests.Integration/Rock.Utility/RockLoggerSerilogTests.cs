@@ -157,6 +157,8 @@ namespace Rock.Tests.Integration
 
             // The lack of an assert is valid here because if it runs without an exception everything is fine.
             // The logger.Close() calls dispose on the actual logger object and we want to make sure the class re-initializes it as necessary.
+
+            logger.Close();
         }
 
         [TestMethod]
@@ -255,47 +257,47 @@ namespace Rock.Tests.Integration
         public void LoggerVerboseShouldLogCorrectly()
         {
             var logger = GetTestLogger();
-
+            var logLevel = "Verbose";
             var expectedLogMessages = new List<string>();
 
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString(logGuid, "OTHER", logLevel) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( "CRM", logGuid );
-            expectedLogMessages.Add( $"CRM {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"OTHER {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( "CRM", TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logger.Close();
 
             foreach ( var expectedMessage in expectedLogMessages )
             {
-                Assert.That.FileContains( logger.LogConfiguration.LogPath, $" [VRB] {expectedMessage}" );
+                Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedMessage );
             }
         }
 
@@ -428,44 +430,45 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
+            var logLevel = "Warning";
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", logGuid );
-            expectedLogMessages.Add( $"CRM {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"OTHER {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logger.Close();
 
             foreach ( var expectedMessage in expectedLogMessages )
             {
-                Assert.That.FileContains( logger.LogConfiguration.LogPath, $" [WRN] {expectedMessage}" );
+                Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedMessage );
             }
         }
 
@@ -475,44 +478,45 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
+            var logLevel = "Error";
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( "CRM", logGuid );
-            expectedLogMessages.Add( $"CRM {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"OTHER {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( "CRM", TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logger.Close();
 
             foreach ( var expectedMessage in expectedLogMessages )
             {
-                Assert.That.FileContains( logger.LogConfiguration.LogPath, $" [ERR] {expectedMessage}" );
+                Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedMessage );
             }
         }
 
@@ -522,44 +526,45 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
+            var logLevel = "Fatal";
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( "CRM", logGuid );
-            expectedLogMessages.Add( $"CRM {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"OTHER {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( "CRM", TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logger.Close();
 
             foreach ( var expectedMessage in expectedLogMessages )
             {
-                Assert.That.FileContains( logger.LogConfiguration.LogPath, $" [FTL] {expectedMessage}" );
+                Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedMessage );
             }
         }
 
@@ -567,14 +572,15 @@ namespace Rock.Tests.Integration
         public void LoggerVerboseShouldLogOnlySpecifiedDomains()
         {
             var logger = GetTestLogger( domainsToLog: new List<string> { "other" } );
+            var logLevel = "Verbose";
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            var expectedLogMessage = $"OTHER {logGuid}";
+            var expectedLogMessage = GetSimpleExpectedString( logGuid, "OTHER", logLevel );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( "CRM", logGuid );
-            var excludedLogMessage = $"CRM {logGuid}";
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", logLevel );
 
             logger.Close();
 
@@ -586,14 +592,15 @@ namespace Rock.Tests.Integration
         public void LoggerDebugShouldLogOnlySpecifiedDomains()
         {
             var logger = GetTestLogger( domainsToLog: new List<string> { "other" } );
+            var logLevel = "Debug";
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            var expectedLogMessage = GetSimpleExpectedString(logGuid, "OTHER", "Debug");
+            var expectedLogMessage = GetSimpleExpectedString( logGuid, "OTHER", logLevel );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( "CRM", logGuid );
-            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", "Debug" );
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", logLevel );
 
             logger.Close();
 
@@ -608,11 +615,11 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            var expectedLogMessage = $"OTHER {logGuid}";
+            var expectedLogMessage = GetSimpleExpectedString( logGuid, "OTHER" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( "CRM", logGuid );
-            var excludedLogMessage = $"CRM {logGuid}";
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM" );
 
             logger.Close();
 
@@ -624,14 +631,14 @@ namespace Rock.Tests.Integration
         public void LoggerWarningShouldLogOnlySpecifiedDomains()
         {
             var logger = GetTestLogger( domainsToLog: new List<string> { "other" } );
-
+            var logLevel = "Warning";
             var logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            var expectedLogMessage = $"OTHER {logGuid}";
+            var expectedLogMessage = GetSimpleExpectedString( logGuid, "OTHER", logLevel );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", logGuid );
-            var excludedLogMessage = $"CRM {logGuid}";
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", logLevel );
 
             logger.Close();
 
@@ -643,14 +650,14 @@ namespace Rock.Tests.Integration
         public void LoggerErrorShouldLogOnlySpecifiedDomains()
         {
             var logger = GetTestLogger( domainsToLog: new List<string> { "other" } );
-
+            var logLevel = "Error";
             var logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            var expectedLogMessage = $"OTHER {logGuid}";
+            var expectedLogMessage = GetSimpleExpectedString( logGuid, "OTHER", logLevel );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( "CRM", logGuid );
-            var excludedLogMessage = $"CRM {logGuid}";
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", logLevel );
 
             logger.Close();
 
@@ -662,14 +669,14 @@ namespace Rock.Tests.Integration
         public void LoggerFatalShouldLogOnlySpecifiedDomains()
         {
             var logger = GetTestLogger( domainsToLog: new List<string> { "other" } );
-
+            var logLevel = "Fatal";
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            var expectedLogMessage = $"OTHER {logGuid}";
+            var expectedLogMessage = GetSimpleExpectedString( logGuid, "OTHER", logLevel );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( "CRM", logGuid );
-            var excludedLogMessage = $"CRM {logGuid}";
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", logLevel );
 
             logger.Close();
 
@@ -686,27 +693,27 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Fatal" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Error" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Warning" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Debug" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Verbose" ) );
 
             logger.Close();
 
@@ -723,27 +730,27 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Fatal" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Error" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Warning" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Debug" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Verbose" ) );
 
             logger.Close();
 
@@ -768,27 +775,27 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Fatal" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Error" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Warning" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Debug" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Verbose" ) );
 
             logger.Close();
 
@@ -813,27 +820,27 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Fatal" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Error" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Warning" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Debug" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Verbose" ) );
 
             logger.Close();
 
@@ -858,27 +865,27 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Fatal" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Error" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Warning" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Debug" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Verbose" ) );
 
             logger.Close();
 
@@ -903,27 +910,27 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Fatal" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Error" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Warning" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Debug" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            excludedLogMessages.Add( $"OTHER {logGuid}" );
+            excludedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Verbose" ) );
 
             logger.Close();
 
@@ -947,27 +954,27 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Fatal( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Fatal" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Error( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Error" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Warning" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Debug" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Verbose( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", "Verbose" ) );
 
             logger.Close();
 
@@ -984,18 +991,18 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Warning( logGuid );
-            var expectedLogMessage = $"OTHER {logGuid}";
+            var expectedLogMessage = GetSimpleExpectedString( logGuid, "OTHER", "Warning" );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", logGuid );
-            var excludedLogMessage = $"CRM {logGuid}";
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", "Warning" );
 
             logger.LogConfiguration.DomainsToLog.Add( "CRM" );
             logger.LogConfiguration.LastUpdated = DateTime.Now;
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", logGuid );
-            var expectedLogMessage2 = $"CRM {logGuid}";
+            var expectedLogMessage2 = GetSimpleExpectedString( logGuid, "CRM", "Warning" );
 
             logger.Close();
 

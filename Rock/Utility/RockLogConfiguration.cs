@@ -85,7 +85,7 @@ namespace Rock.Utility
                             .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                             .ToList();
 
-            LogPath = System.IO.Path.Combine( HttpRuntime.AppDomainAppPath, "App_Data\\Logs\\Rock.log" );
+            LogPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Logs\\Rock.log" );
 
             LastUpdated = DateTime.Now;
         }

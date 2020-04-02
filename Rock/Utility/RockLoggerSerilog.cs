@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace Rock.Utility
 {
@@ -22,7 +23,11 @@ namespace Rock.Utility
 
         ~RockLoggerSerilog()
         {
-            ( ( IDisposable ) logger ).Dispose();
+            if ( logger != null )
+            {
+                ( ( IDisposable ) logger ).Dispose();
+                logger = null;
+            }
         }
 
         public void Close()
@@ -415,7 +420,8 @@ namespace Rock.Utility
                  .MinimumLevel
                  .Verbose()
                  .WriteTo
-                 .File( rockLogConfiguration.LogPath,
+                 .File( new CompactJsonFormatter(),
+                     rockLogConfiguration.LogPath,
                      rollingInterval: RollingInterval.Infinite,
                      buffered: true,
                      shared: false,
@@ -426,7 +432,7 @@ namespace Rock.Utility
                  .Filter
                  .ByIncludingOnly( ( e ) => ShouldLogDomain( e ) )
                  .CreateLogger();
-
+            
             ConfigurationLastLoaded = DateTime.Now;
         }
 

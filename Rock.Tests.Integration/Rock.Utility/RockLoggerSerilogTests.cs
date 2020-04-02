@@ -24,7 +24,7 @@ namespace Rock.Tests.Integration
 
             var file = System.IO.File.ReadAllText( filePath );
             var fileContainsExpectedString = file.Contains( expectedString );
-            
+
             if ( !fileContainsExpectedString )
             {
                 throw new AssertFailedException( $"File {filePath} did not contain '{expectedString}'." );
@@ -127,7 +127,7 @@ namespace Rock.Tests.Integration
         }
 
         private const string TEST_LOGGER_CONFIG_SERIALIZATION = "{\"LogLevel\":\"All\",\"MaxFileSize\":1,\"NumberOfLogFiles\":1,\"DomainsToLog\":[\"OTHER\",\"crm\"],\"LogPath\":\"logs\\\\rock.log\",\"LastUpdated\":\"2020-04-01T11:11:11.0000000\",\"$type\":\"RockLogConfiguration\"}";
-        private const string TEST_EXCEPTION_SERIALIZATION = "\r\nSystem.Exception: Test Exception";
+        private const string TEST_EXCEPTION_SERIALIZATION = "System.Exception: Test Exception";
 
         private readonly Exception TestException = new Exception( "Test Exception" );
         private readonly RockLogConfiguration ObjectToLog;
@@ -305,44 +305,75 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
             var expectedLogMessages = new List<string>();
             var logGuid = $"{Guid.NewGuid()}";
+            var logLevel = "Debug";
 
             logger.Debug( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( "CRM", logGuid );
-            expectedLogMessages.Add( $"CRM {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"OTHER {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( "CRM", TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", logLevel, true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", logLevel, true ) );
 
             logger.Close();
 
             foreach ( var expectedMessage in expectedLogMessages )
             {
-                Assert.That.FileContains( logger.LogConfiguration.LogPath, $" [DBG] {expectedMessage}" );
+                Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedMessage );
             }
+        }
+
+        private string GetSimpleExpectedString( string logGuid, string domain, string logLevel = "", bool includeException = false )
+        {
+            var logLevelText = string.Empty;
+            if ( !string.IsNullOrWhiteSpace( logLevel ) )
+            {
+                logLevelText = $"\"@l\":\"{logLevel}\",";
+            }
+
+            if ( includeException )
+            {
+                return $"\"@mt\":\"{{domain}} {logGuid}\",{logLevelText}\"@x\":\"{TEST_EXCEPTION_SERIALIZATION}\",\"domain\":\"{domain}\"";
+            }
+            return $"\"@mt\":\"{{domain}} {logGuid}\",{logLevelText}\"domain\":\"{domain}\"";
+        }
+
+        private string GetStructuredExpectedString( string logGuid, string domain, string logLevel = "", bool includeException = false )
+        {
+            var logLevelText = string.Empty;
+            if ( !string.IsNullOrWhiteSpace( logLevel ) )
+            {
+                logLevelText = $"\"@l\":\"{logLevel}\",";
+            }
+
+            if ( includeException )
+            {
+                return $"\"@mt\":\"{{domain}} {logGuid} {{@oneProperty}} {{@twoProperty}}\",{logLevelText}\"@x\":\"{TEST_EXCEPTION_SERIALIZATION}\",\"domain\":\"{domain}\",\"oneProperty\":{{\"LogLevel\":\"All\",\"MaxFileSize\":1,\"NumberOfLogFiles\":1,\"DomainsToLog\":[\"OTHER\",\"crm\"],\"LogPath\":\"logs\\\\rock.log\",\"LastUpdated\":\"2020-04-01T11:11:11.0000000\",\"$type\":\"RockLogConfiguration\"}},\"twoProperty\":\"All\"";
+            }
+            return $"\"@mt\":\"{{domain}} {logGuid} {{@oneProperty}} {{@twoProperty}}\",{logLevelText}\"domain\":\"{domain}\",\"oneProperty\":{{\"LogLevel\":\"All\",\"MaxFileSize\":1,\"NumberOfLogFiles\":1,\"DomainsToLog\":[\"OTHER\",\"crm\"],\"LogPath\":\"logs\\\\rock.log\",\"LastUpdated\":\"2020-04-01T11:11:11.0000000\",\"$type\":\"RockLogConfiguration\"}},\"twoProperty\":\"All\"";
         }
 
         [TestMethod]
@@ -351,44 +382,43 @@ namespace Rock.Tests.Integration
             var logger = GetTestLogger();
 
             var expectedLogMessages = new List<string>();
-
             var logGuid = $"{Guid.NewGuid()}";
             logger.Information( logGuid );
-            expectedLogMessages.Add( $"OTHER {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( "CRM", logGuid );
-            expectedLogMessages.Add( $"CRM {logGuid}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( "CRM", $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM" ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"OTHER {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "OTHER", includeException: true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( "CRM", TestException, $"{logGuid}" );
-            expectedLogMessages.Add( $"CRM {logGuid}{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetSimpleExpectedString( logGuid, "CRM", includeException: true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"OTHER {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "OTHER", includeException: true ) );
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Information( "CRM", TestException, $"{logGuid} {{@oneProperty}} {{@twoProperty}}", ObjectToLog, RockLogLevel.All );
-            expectedLogMessages.Add( $"CRM {logGuid} {TEST_LOGGER_CONFIG_SERIALIZATION} \"All\"{TEST_EXCEPTION_SERIALIZATION}" );
+            expectedLogMessages.Add( GetStructuredExpectedString( logGuid, "CRM", includeException: true ) );
 
             logger.Close();
 
             foreach ( var expectedMessage in expectedLogMessages )
             {
-                Assert.That.FileContains( logger.LogConfiguration.LogPath, $" [INF] {expectedMessage}" );
+                Assert.That.FileContains( logger.LogConfiguration.LogPath, expectedMessage );
             }
         }
 
@@ -559,11 +589,11 @@ namespace Rock.Tests.Integration
 
             var logGuid = $"{Guid.NewGuid()}";
             logger.Debug( logGuid );
-            var expectedLogMessage = $"OTHER {logGuid}";
+            var expectedLogMessage = GetSimpleExpectedString(logGuid, "OTHER", "Debug");
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Debug( "CRM", logGuid );
-            var excludedLogMessage = $"CRM {logGuid}";
+            var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", "Debug" );
 
             logger.Close();
 

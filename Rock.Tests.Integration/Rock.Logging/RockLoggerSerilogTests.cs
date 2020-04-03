@@ -205,7 +205,7 @@ namespace Rock.Tests.Integration.Logging
         [TestMethod]
         public void LoggerLogFileSizeShouldBeWithinRange()
         {
-            var logger = GetTestLogger( numberOfLogFiles: 10 );
+            var logger = GetTestLogger( numberOfLogFiles: 20, logSize: 20 );
             var expectedMaxFileSize = logger.LogConfiguration.MaxFileSize * 1024 * 1024;
             var onePercentVariation = .01;
 
@@ -1094,15 +1094,16 @@ namespace Rock.Tests.Integration.Logging
             TestContext.WriteLine( "CreateLogFiles wrote {0} bytes of logs to {1}.", currentByteCount, logger.LogConfiguration.LogPath );
         }
 
-        private class RockLogConfiguration : IRockLogConfiguration
-        {
-            public RockLogLevel LogLevel { get; set; }
-            public int MaxFileSize { get; set; }
-            public int NumberOfLogFiles { get; set; }
-            public List<string> DomainsToLog { get; set; }
-            public string LogPath { get; set; }
-            public DateTime LastUpdated { get; set; }
-        }
         #endregion
+    }
+
+    internal class RockLogConfiguration : IRockLogConfiguration
+    {
+        public RockLogLevel LogLevel { get; set; }
+        public int MaxFileSize { get; set; }
+        public int NumberOfLogFiles { get; set; }
+        public List<string> DomainsToLog { get; set; }
+        public string LogPath { get; set; }
+        public DateTime LastUpdated { get; set; }
     }
 }

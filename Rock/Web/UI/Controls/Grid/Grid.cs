@@ -215,6 +215,27 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        private bool showPaginationText = true;
+        public bool ShowPaginationText
+        {
+            get
+            {
+                return showPaginationText;
+            }
+            set
+            {
+                showPaginationText = value;
+                if ( PagerTemplate != null )
+                {
+                    var pageTemplate = PagerTemplate as PagerTemplate;
+                    if(pageTemplate != null )
+                    {
+                        pageTemplate.ShowPaginationText = value;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets the export source.
         /// </summary>
@@ -835,6 +856,8 @@ namespace Rock.Web.UI.Controls
             _pagerTemplate.NavigateClick += pagerTemplate_NavigateClick;
             _pagerTemplate.ItemsPerPageClick += pagerTemplate_ItemsPerPageClick;
 
+            _pagerTemplate.ShowPaginationText = ShowPaginationText;
+
             this.PagerTemplate = _pagerTemplate;
 
             this.Sorting += Grid_Sorting;
@@ -1449,7 +1472,8 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
             if ( PagerTemplate != null )
             {
-                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
+                var virtualPageCount = AllowCustomPaging ? (int)Math.Ceiling((decimal) ( VirtualItemCount / PageSize )) : this.PageCount;
+                pagerTemplate.SetNavigation( virtualPageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
             }
         }
 
@@ -4296,6 +4320,8 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         /// </value>
         internal HtmlGenericControl NavigationPanel { get; set; }
 
+        internal bool ShowPaginationText { get; set; }
+
         /// <summary>
         /// Gets or sets the page link list item.
         /// </summary>
@@ -4519,7 +4545,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
 
             // Set Item Count
-            if ( itemCountDisplay != null )
+            if ( itemCountDisplay != null && ShowPaginationText )
             {
                 itemCountDisplay.Text = string.Format( "{0:N0} {1}", itemCount, itemCount == 1 ? rowItemText : rowItemText.Pluralize() );
             }

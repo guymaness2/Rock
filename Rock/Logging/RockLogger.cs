@@ -17,5 +17,8 @@ namespace Rock.Logging
                 return log;
             }
         }
+
+        public static IRockLogReader LogReader => new RockSerilogReader( Log);
+
     }
 }

@@ -8,6 +8,7 @@ namespace Rock.Logging
 {
     public class RockLogEvent
     {
+        public string Domain { get; set; }
         public string Message { get; set; }
         public DateTime DateTime { get; set; }
         public Exception Exception { get; set; }

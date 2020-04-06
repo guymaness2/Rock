@@ -30,6 +30,7 @@ using Rock.SystemKey;
 using System.Threading.Tasks;
 using System.Linq;
 using Rock.Utility;
+using Rock.Logging;
 
 namespace RockWeb.Blocks.Administration
 {

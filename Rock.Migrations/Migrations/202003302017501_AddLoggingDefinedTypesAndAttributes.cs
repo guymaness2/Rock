@@ -172,19 +172,19 @@ namespace Rock.Migrations
         {
             RockMigrationHelper.UpdateBlockType( "Logs", "Block to view system logs.", "~/Blocks/Administration/Logs.ascx", "Administration", "6059FC03-E398-4359-8632-909B63FFA550" );
 
+            RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Rock Logs", "", "82EC7718-6549-4531-A0AB-7957919AE71C", "" ); // Site:Rock RMS
+
             // Add Block to Page: Rock Logs Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "82EC7718-6549-4531-A0AB-7957919AE71C".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "6059FC03-E398-4359-8632-909B63FFA550".AsGuid(), "Rock Logs", "Main", @"", @"", 0, "BDEF9AA0-55FC-4A66-8938-2AB2E075521B" );
-
-            RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Rock Logs", "", "82EC7718-6549-4531-A0AB-7957919AE71C", "" ); // Site:Rock RMS
         }
 
         private void RemoveLogPage()
         {
-            RockMigrationHelper.DeletePage( "82EC7718-6549-4531-A0AB-7957919AE71C" ); //  Page: Rock Logs, Layout: Full Width, Site: Rock RMS
-            
             // Remove Block: Rock Logs, from Page: Rock Logs, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "BDEF9AA0-55FC-4A66-8938-2AB2E075521B" );
 
+            RockMigrationHelper.DeletePage( "82EC7718-6549-4531-A0AB-7957919AE71C" ); //  Page: Rock Logs, Layout: Full Width, Site: Rock RMS
+            
             RockMigrationHelper.DeleteBlockType( "6059FC03-E398-4359-8632-909B63FFA550" ); // Logs
         }
 

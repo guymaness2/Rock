@@ -8,7 +8,7 @@ using Rock.Tests.Integration.Utility;
 namespace Rock.Tests.Integration.Logging
 {
     [TestClass]
-    public class RockLogReaderTests
+    public class RockSerilogReaderTests
     {
         [TestMethod]
         public void RockLogReaderShouldReturnLogEntriesInCorrectOrder()
@@ -26,8 +26,8 @@ namespace Rock.Tests.Integration.Logging
             var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
 
             var expectedLogs = CreateLogFiles( logger );
-            
-            var rockReader = new RockLogReader( logger );
+
+            var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
 
             var currentPageIndex = 0;
             var pageSize = 1000;
@@ -67,7 +67,7 @@ namespace Rock.Tests.Integration.Logging
 
             var expectedLogs = CreateLogFiles( logger );
 
-            var rockReader = new RockLogReader( logger );
+            var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
 
             var currentPageIndex = 19000;
             var pageSize = 1000;
@@ -94,7 +94,7 @@ namespace Rock.Tests.Integration.Logging
 
             var expectedLogs = CreateLogFiles( logger );
 
-            var rockReader = new RockLogReader( logger );
+            var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
 
             var currentPageIndex = 0;
             var pageSize = 19000;
@@ -104,18 +104,49 @@ namespace Rock.Tests.Integration.Logging
             Assert.AreEqual( expectedLogs.Count, results.Count );
         }
 
+        [TestMethod]
+        public void RockLogReaderShouldHandleDomainCorrectly()
+        {
+            var config = new RockLogConfiguration
+            {
+                LogLevel = RockLogLevel.All,
+                MaxFileSize = 1,
+                NumberOfLogFiles = 3,
+                DomainsToLog = new List<string> { "OTHER" },
+                LogPath = $"\\Logs\\{Guid.NewGuid()}.log",
+                LastUpdated = DateTime.Now
+            };
+
+            var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
+            var expectedMessage = "This is a test.";
+            var expectedDomain = RockLogDomains.Other;
+
+            logger.Information( expectedMessage );
+
+            var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
+
+            var currentPageIndex = 0;
+            var pageSize = 100;
+            var nextPageIndex = currentPageIndex + pageSize;
+
+            var results = rockReader.GetEvents( currentPageIndex, pageSize );
+            Assert.AreEqual( 1, results.Count );
+            Assert.AreEqual( expectedMessage, results[0].Message );
+            Assert.AreEqual( expectedDomain, results[0].Domain );
+        }
+
         private List<string> CreateLogFiles( IRockLogger logger )
         {
             var maxByteCount = logger.LogConfiguration.MaxFileSize * 1024 * 1024 * (logger.LogConfiguration.NumberOfLogFiles - 1);
             var currentByteCount = 0;
             var logRecordSize = Encoding.ASCII.GetByteCount( "{\"@t\":\"0000-00-00T00:00:00.0000000Z\",\"@mt\":\"{domain} Test - 00000000-0000-0000-0000-000000000000\",\"domain\":\"OTHER\"}" );
             var expectedLogs = new List<string>();
-
+            
             while ( currentByteCount < maxByteCount )
             {
                 var guid = Guid.NewGuid();
                 var expectedLogMessage = $"Test - {guid}";
-                logger.Information( expectedLogMessage );
+                logger.Information( RockLogDomains.Other, expectedLogMessage );
                 expectedLogs.Add( guid.ToString() );
                 currentByteCount += logRecordSize;
             }

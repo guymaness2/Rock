@@ -8,14 +8,30 @@ using Serilog.Formatting.Compact.Reader;
 
 namespace Rock.Logging
 {
-    public class RockLogReader
+    internal class RockSerilogReader : IRockLogReader
     {
         private readonly IRockLogger rockLogger;
         private readonly string rockLogDirectory;
         private readonly string searchPattern;
         private readonly JsonSerializer jsonSerializer;
 
-        public RockLogReader(IRockLogger logger )
+        public int RecordCount
+        {
+            get
+            {
+                /*
+	                04/05/2020 - MSB 
+	                The number of log records could be large and span multiple files we don't want to
+                    incur the cost of counting the number of records in the log file because that would
+                    mean reading every line in all files. So we are setting this value to a high value, but
+                    we can't use int.MaxValue because that appears to cause some sort of issue in
+                    the GridView.PageCount property and it would always return 1.
+                */
+                return 2000000000;
+            }
+        }
+
+        public RockSerilogReader( IRockLogger logger )
         {
             rockLogger = logger;
 
@@ -32,7 +48,7 @@ namespace Rock.Logging
             } );
         }
 
-        public List<RockLogEvent> GetEvents(int startIndex, int count )
+        public List<RockLogEvent> GetEvents( int startIndex, int count )
         {
             rockLogger.Close();
             var results = new List<RockLogEvent>();
@@ -42,7 +58,7 @@ namespace Rock.Logging
             var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
             //var logs = firstLogFile.Reverse();
 
-            while((startIndex >= logs.Length || startIndex + count >= logs.Length) && currentFileIndex < (rockLogFiles.Count - 1) )
+            while ( ( startIndex >= logs.Length || startIndex + count >= logs.Length ) && currentFileIndex < ( rockLogFiles.Count - 1 ) )
             {
                 currentFileIndex++;
                 var additionalLogs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
@@ -53,18 +69,23 @@ namespace Rock.Logging
                 logs = temp;
             }
 
-            var reversedStartIndex = (logs.Length - 1) - startIndex;
+            var reversedStartIndex = ( logs.Length - 1 ) - startIndex;
             var reversedEndIndex = reversedStartIndex - count;
-            for (var i = reversedStartIndex; i > reversedEndIndex && i >= 0; i-- )
+            for ( var i = reversedStartIndex; i > reversedEndIndex && i >= 0; i-- )
             {
                 var evt = LogEventReader.ReadFromString( logs.ElementAt( i ), jsonSerializer );
+                var domain = evt.Properties["domain"].ToString();
+                evt.RemovePropertyIfPresent( "domain" );
+                var message = evt.RenderMessage().Replace( "{domain}", "" ).Trim();
+                domain = domain.Replace( "\"", "" );
 
                 results.Add( new RockLogEvent
                 {
                     DateTime = evt.Timestamp.DateTime,
                     Exception = evt.Exception,
                     Level = GetRockLogLevelFromSerilogLevel( evt.Level ),
-                    Message = evt.RenderMessage()
+                    Domain = domain,
+                    Message = message
                 } );
             }
             //using ( var clef = File.OpenText( rockConfiguration.LogPath ) )

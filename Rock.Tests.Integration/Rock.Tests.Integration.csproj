@@ -92,7 +92,7 @@
     <Compile Include="Model\StepTests.cs" />
     <Compile Include="Rock.Logging\RockLogConfigurationTest.cs" />
     <Compile Include="Rock.Logging\RockLoggerTests.cs" />
-    <Compile Include="Rock.Logging\RockLogReaderTests.cs" />
+    <Compile Include="Rock.Logging\RockSerilogReaderTests.cs" />
     <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Rock.Logging\RockLoggerSerilogTests.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />

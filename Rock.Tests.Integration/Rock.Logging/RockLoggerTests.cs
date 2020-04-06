@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Logging;
 using Rock.SystemKey;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Logging
 {

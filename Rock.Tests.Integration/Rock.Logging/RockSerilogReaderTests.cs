@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Logging;
 using Rock.Tests.Integration.Utility;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Logging
 {
@@ -45,7 +46,7 @@ namespace Rock.Tests.Integration.Logging
                 }
 
                 var resultIndex = lastIndex - i - currentPageIndex;
-                StringAssert.Contains( results[resultIndex].Message, expectedLogs[i] );
+                Assert.That.Contains( results[resultIndex].Message, expectedLogs[i] );
             }
             
         }
@@ -74,7 +75,7 @@ namespace Rock.Tests.Integration.Logging
             var nextPageIndex = currentPageIndex + pageSize;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( 0, results.Count );
+            Assert.That.AreEqual( 0, results.Count );
         }
 
         [TestMethod]
@@ -101,7 +102,7 @@ namespace Rock.Tests.Integration.Logging
             var nextPageIndex = currentPageIndex + pageSize;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( expectedLogs.Count, results.Count );
+            Assert.That.AreEqual( expectedLogs.Count, results.Count );
         }
 
         [TestMethod]
@@ -130,9 +131,9 @@ namespace Rock.Tests.Integration.Logging
             var nextPageIndex = currentPageIndex + pageSize;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( 1, results.Count );
-            Assert.AreEqual( expectedMessage, results[0].Message );
-            Assert.AreEqual( expectedDomain, results[0].Domain );
+            Assert.That.AreEqual( 1, results.Count );
+            Assert.That.AreEqual( expectedMessage, results[0].Message );
+            Assert.That.AreEqual( expectedDomain, results[0].Domain );
         }
 
         private List<string> CreateLogFiles( IRockLogger logger )

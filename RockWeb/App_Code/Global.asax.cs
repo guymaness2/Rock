@@ -44,6 +44,7 @@ using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;

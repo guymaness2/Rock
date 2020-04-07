@@ -107,7 +107,7 @@ namespace Rock.Tests.Integration.Logging
         [TestMethod]
         public void LoggerLogFileSizeShouldBeWithinRange()
         {
-            var logger = GetTestLogger( numberOfLogFiles: 20, logSize: 20 );
+            var logger = GetTestLogger( numberOfLogFiles: 5, logSize: 5 );
             var expectedMaxFileSize = logger.LogConfiguration.MaxFileSize * 1024 * 1024;
             var onePercentVariation = .01;
 

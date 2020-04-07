@@ -18,6 +18,58 @@ namespace Rock.Tests.Integration.Logging
         }
 
         [TestMethod]
+        public void RockLogReaderShouldReturnZeroLogEntriesIfDirectoryDoesNotExists()
+        {
+            var config = new RockLogConfiguration
+            {
+                LogLevel = RockLogLevel.All,
+                MaxFileSize = 1,
+                NumberOfLogFiles = 3,
+                DomainsToLog = new List<string> { "OTHER" },
+                LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
+                LastUpdated = DateTime.Now
+            };
+
+            var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
+            var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
+
+            var currentPageIndex = 0;
+            var pageSize = 1000;
+
+            var results = rockReader.GetEvents( currentPageIndex, pageSize );
+            Assert.That.AreEqual( 0, results.Count );
+        }
+
+        [TestMethod]
+        public void RockLogReaderShouldReturnZeroLogEntriesIfNoLogFilesExist()
+        {
+            var config = new RockLogConfiguration
+            {
+                LogLevel = RockLogLevel.All,
+                MaxFileSize = 1,
+                NumberOfLogFiles = 3,
+                DomainsToLog = new List<string> { "OTHER" },
+                LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
+                LastUpdated = DateTime.Now
+            };
+
+            var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
+
+            logger.Information( "Test" );
+            logger.Close();
+
+            System.IO.File.Delete( config.LogPath );
+            
+            var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
+
+            var currentPageIndex = 0;
+            var pageSize = 1000;
+
+            var results = rockReader.GetEvents( currentPageIndex, pageSize );
+            Assert.That.AreEqual( 0, results.Count );
+        }
+
+        [TestMethod]
         public void RockLogReaderShouldReturnLogEntriesInCorrectOrder()
         {
             var config = new RockLogConfiguration

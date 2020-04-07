@@ -72,6 +72,11 @@ namespace Rock.Logging
 
         private string[] GetLogLines( int startIndex, int count )
         {
+            if ( !System.IO.Directory.Exists( rockLogDirectory ) )
+            {
+                return new string[] { };
+            }
+
             var rockLogFiles = System.IO.Directory.GetFiles( rockLogDirectory, searchPattern ).OrderByDescending( s => s ).ToList();
             if ( rockLogFiles.Count == 0 )
             {

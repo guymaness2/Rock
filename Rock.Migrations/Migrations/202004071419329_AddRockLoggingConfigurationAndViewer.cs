@@ -159,7 +159,7 @@ namespace Rock.Migrations
 
         private void AddLogPage()
         {
-            RockMigrationHelper.UpdateBlockType( "Logs", "Block to view system logs.", "~/Blocks/Administration/Logs.ascx", "Administration", "6059FC03-E398-4359-8632-909B63FFA550" );
+            RockMigrationHelper.UpdateBlockType( "Logs", "Block to view system logs.", "~/Blocks/Administration/LogViewer.ascx", "Administration", "6059FC03-E398-4359-8632-909B63FFA550" );
 
             RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Rock Logs", "", "82EC7718-6549-4531-A0AB-7957919AE71C", "" ); // Site:Rock RMS
 

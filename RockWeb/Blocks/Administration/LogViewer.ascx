@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Logs.ascx.cs" Inherits="RockWeb.Blocks.Administration.Logs" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LogViewer.ascx.cs" Inherits="RockWeb.Blocks.Administration.LogViewer" %>
 <asp:UpdatePanel runat="server">
     <ContentTemplate>
         <Rock:ModalAlert ID="mdAlert" runat="server" />

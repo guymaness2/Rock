@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Administration
     [System.ComponentModel.Category( "Administration" )]
     [System.ComponentModel.Description( "Block to view system logs." )]
 
-    public partial class Logs : RockBlock, ICustomGridColumns
+    public partial class LogViewer : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

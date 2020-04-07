@@ -73,6 +73,11 @@ namespace Rock.Logging
         private string[] GetLogLines( int startIndex, int count )
         {
             var rockLogFiles = System.IO.Directory.GetFiles( rockLogDirectory, searchPattern ).OrderByDescending( s => s ).ToList();
+            if ( rockLogFiles.Count == 0 )
+            {
+                return new string[] { };
+            }
+
             var currentFileIndex = 0;
             var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
 

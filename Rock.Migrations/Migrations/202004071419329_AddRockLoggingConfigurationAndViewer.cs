@@ -23,7 +23,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddLoggingDefinedTypesAndAttributes : Rock.Migrations.RockMigration
+    public partial class AddRockLoggingConfigurationAndViewer : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

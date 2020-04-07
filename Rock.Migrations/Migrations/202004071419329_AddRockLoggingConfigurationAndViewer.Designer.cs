@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddLoggingDefinedTypesAndAttributes : IMigrationMetadata
+    public sealed partial class AddRockLoggingConfigurationAndViewer : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddDateKeyToSelectTables));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddContentChannelCategory));
         
         string IMigrationMetadata.Id
         {
-            get { return "202003302017501_AddLoggingDefinedTypesAndAttributes"; }
+            get { return "202004071419329_AddRockLoggingConfigurationAndViewer"; }
         }
         
         string IMigrationMetadata.Source

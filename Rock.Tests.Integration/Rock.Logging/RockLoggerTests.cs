@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Logging;
-using Rock.SystemKey;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Logging
@@ -19,10 +18,7 @@ namespace Rock.Tests.Integration.Logging
             var originalFileCount = 10;
             var originalDomains = new List<string> { RockLogDomains.Other, RockLogDomains.Communications };
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_LOG_LEVEL, originalLogLevel.ToString() );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_SIZE, originalFileSize.ToString() );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_COUNT, originalFileCount.ToString() );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG, string.Join( ",", originalDomains ) );
+            RockLoggingHelpers.SaveRockLogConfiguration( originalDomains, originalLogLevel, originalFileSize, originalFileCount );
 
             var expectedMessage = $"Test {Guid.NewGuid()}";
             RockLogger.Log.Information( expectedMessage );

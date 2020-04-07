@@ -30,6 +30,15 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            AddRockLogLevelDefinedValues();
+
+            AddRockLogSystemSettings();
+
+            AddLogPage();
+        }
+
+        private void AddRockLogLevelDefinedValues()
+        {
             RockMigrationHelper.AddDefinedType( "System Settings",
                 "Logging Domains",
                 "Domains that can be logged.",
@@ -124,48 +133,28 @@ namespace Rock.Migrations
                 "Other",
                 string.Empty,
                 Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_OTHER );
+        }
+        private void AddRockLogSystemSettings()
+        {
+            var defaultRockLogSystemSettings = new RockLogSystemSettings
+            {
+                DomainsToLog = new System.Collections.Generic.List<string>(),
+                LogLevel = RockLogLevel.Off,
+                NumberOfLogFiles = 20,
+                MaxFileSize = 20
+            };
+
+            var serializedRockLog = defaultRockLogSystemSettings.ToJson();
 
             RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT,
                 Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER,
                 string.Empty,
-                SystemSetting.LOGGING_LOG_LEVEL,
-                "Logging log level.",
+                SystemSetting.ROCK_LOGGING_SETTINGS,
+                "Rock Logging System Settings",
                 0,
-                RockLogLevel.Off.ToString(),
-                "E183CD5B-5820-4C4A-9462-E5F285C325B2",
-                SystemSetting.LOGGING_LOG_LEVEL );
-
-            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT,
-                Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER,
-                string.Empty,
-                SystemSetting.LOGGING_DOMAINS_TO_LOG,
-                "Logging domain to log.",
-                0,
-                string.Empty,
-                "9E896855-992D-4E63-B358-8190DAA356F8",
-                SystemSetting.LOGGING_DOMAINS_TO_LOG );
-
-            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT,
-                Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER,
-                string.Empty,
-                SystemSetting.LOGGING_FILE_COUNT,
-                "Logging number of log files to keep.",
-                0,
-                "20",
-                "381460BE-5435-44B6-AFB7-E5F40FFECB59",
-                SystemSetting.LOGGING_FILE_COUNT );
-
-            RockMigrationHelper.AddGlobalAttribute( Rock.SystemGuid.FieldType.TEXT,
-                Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER,
-                string.Empty,
-                SystemSetting.LOGGING_FILE_SIZE,
-                "Logging the max size of a log file.",
-                0,
-                "20",
-                "5BB23964-94C7-4D87-AE5F-218D6950605C",
-                SystemSetting.LOGGING_FILE_SIZE );
-
-            AddLogPage();
+                serializedRockLog,
+                "B9D4A315-8672-4214-B5D3-01A06C3CAD9F",
+                SystemSetting.ROCK_LOGGING_SETTINGS );
         }
 
         private void AddLogPage()
@@ -178,26 +167,8 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( true, "82EC7718-6549-4531-A0AB-7957919AE71C".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "6059FC03-E398-4359-8632-909B63FFA550".AsGuid(), "Rock Logs", "Main", @"", @"", 0, "BDEF9AA0-55FC-4A66-8938-2AB2E075521B" );
         }
 
-        private void RemoveLogPage()
+        private void RemoveRockLogLevelDefinedValues()
         {
-            // Remove Block: Rock Logs, from Page: Rock Logs, Site: Rock RMS
-            RockMigrationHelper.DeleteBlock( "BDEF9AA0-55FC-4A66-8938-2AB2E075521B" );
-
-            RockMigrationHelper.DeletePage( "82EC7718-6549-4531-A0AB-7957919AE71C" ); //  Page: Rock Logs, Layout: Full Width, Site: Rock RMS
-            
-            RockMigrationHelper.DeleteBlockType( "6059FC03-E398-4359-8632-909B63FFA550" ); // Logs
-        }
-
-        /// <summary>
-        /// Operations to be performed during the downgrade process.
-        /// </summary>
-        public override void Down()
-        {
-            RockMigrationHelper.DeleteAttribute( "E183CD5B-5820-4C4A-9462-E5F285C325B2" );
-            RockMigrationHelper.DeleteAttribute( "9E896855-992D-4E63-B358-8190DAA356F8" );
-            RockMigrationHelper.DeleteAttribute( "381460BE-5435-44B6-AFB7-E5F40FFECB59" );
-            RockMigrationHelper.DeleteAttribute( "5BB23964-94C7-4D87-AE5F-218D6950605C" );
-
             RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_CMS );
             RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_EVENT );
             RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_REPORTING );
@@ -215,6 +186,31 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_OTHER );
 
             RockMigrationHelper.DeleteDefinedType( Rock.SystemGuid.DefinedType.LOGGING_DOMAINS );
+        }
+
+        private void RemoveRockLogSystemSettings()
+        {
+            RockMigrationHelper.DeleteAttribute( "B9D4A315-8672-4214-B5D3-01A06C3CAD9F" );
+        }
+
+        private void RemoveLogPage()
+        {
+            // Remove Block: Rock Logs, from Page: Rock Logs, Site: Rock RMS
+            RockMigrationHelper.DeleteBlock( "BDEF9AA0-55FC-4A66-8938-2AB2E075521B" );
+
+            RockMigrationHelper.DeletePage( "82EC7718-6549-4531-A0AB-7957919AE71C" ); //  Page: Rock Logs, Layout: Full Width, Site: Rock RMS
+
+            RockMigrationHelper.DeleteBlockType( "6059FC03-E398-4359-8632-909B63FFA550" ); // Logs
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            RemoveRockLogSystemSettings();
+
+            RemoveRockLogLevelDefinedValues();
 
             RemoveLogPage();
         }

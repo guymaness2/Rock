@@ -1,10 +1,17 @@
-﻿using System.Web;
-
-namespace Rock.Logging
+﻿namespace Rock.Logging
 {
+    /// <summary>
+    /// This is the static class that is used to log data in Rock.
+    /// </summary>
     public static class RockLogger
     {
         private static IRockLogger log;
+        /// <summary>
+        /// Gets the logger with logging methods.
+        /// </summary>
+        /// <value>
+        /// The log.
+        /// </value>
         public static IRockLogger Log
         {
             get
@@ -18,7 +25,13 @@ namespace Rock.Logging
             }
         }
 
-        public static IRockLogReader LogReader => new RockSerilogReader( Log);
+        /// <summary>
+        /// Gets the log reader.
+        /// </summary>
+        /// <value>
+        /// The log reader.
+        /// </value>
+        public static IRockLogReader LogReader => new RockSerilogReader( Log );
 
     }
 }

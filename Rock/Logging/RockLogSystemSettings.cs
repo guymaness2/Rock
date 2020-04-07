@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Rock.Logging
 {
     /// <summary>
-    /// Interface that is used be the RockLogger to store configuration data.
+    /// This is a simple POCO used to store the System Settings for Rock Logging.
     /// </summary>
-    public interface IRockLogConfiguration
+    public class RockLogSystemSettings
     {
         /// <summary>
         /// Gets or sets the log level.
@@ -14,41 +13,27 @@ namespace Rock.Logging
         /// <value>
         /// The log level.
         /// </value>
-        RockLogLevel LogLevel { get; set; }
+        public RockLogLevel LogLevel { get; set; }
         /// <summary>
         /// Gets or sets the maximum size of the file.
         /// </summary>
         /// <value>
         /// The maximum size of the file.
         /// </value>
-        int MaxFileSize { get; set; }
+        public int MaxFileSize { get; set; }
         /// <summary>
         /// Gets or sets the number of log files.
         /// </summary>
         /// <value>
         /// The number of log files.
         /// </value>
-        int NumberOfLogFiles { get; set; }
+        public int NumberOfLogFiles { get; set; }
         /// <summary>
         /// Gets or sets the domains to log.
         /// </summary>
         /// <value>
         /// The domains to log.
         /// </value>
-        List<string> DomainsToLog { get; set; }
-        /// <summary>
-        /// Gets or sets the log path.
-        /// </summary>
-        /// <value>
-        /// The log path.
-        /// </value>
-        string LogPath { get; set; }
-        /// <summary>
-        /// Gets or sets the last updated.
-        /// </summary>
-        /// <value>
-        /// The last updated.
-        /// </value>
-        DateTime LastUpdated { get; set; }
+        public List<string> DomainsToLog { get; set; }
     }
 }

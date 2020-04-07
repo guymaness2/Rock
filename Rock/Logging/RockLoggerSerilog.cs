@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -432,7 +431,7 @@ namespace Rock.Logging
                  .Filter
                  .ByIncludingOnly( ( e ) => ShouldLogDomain( e ) )
                  .CreateLogger();
-            
+
             ConfigurationLastLoaded = DateTime.Now;
         }
 

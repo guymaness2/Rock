@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Rock.SystemKey;
 
 namespace Rock.Logging
@@ -75,18 +73,24 @@ namespace Rock.Logging
 
         private void UpdateConfigFromSystemSettings()
         {
-            LogLevel = GetRockLogLevel();
+            var rockSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
 
-            NumberOfLogFiles = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_FILE_COUNT ).AsInteger();
-            MaxFileSize = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_FILE_SIZE ).AsInteger();
-
-            DomainsToLog = Rock.Web.SystemSettings
-                            .GetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG )
-                            .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                            .ToList();
+            if ( rockSettings == null )
+            {
+                LogLevel = RockLogLevel.Off;
+                NumberOfLogFiles = 20;
+                MaxFileSize = 20;
+                DomainsToLog = new List<string>();
+            }
+            else
+            {
+                LogLevel = rockSettings.LogLevel;
+                NumberOfLogFiles = rockSettings.NumberOfLogFiles;
+                MaxFileSize = rockSettings.MaxFileSize;
+                DomainsToLog = rockSettings.DomainsToLog;
+            }
 
             LogPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Logs\\Rock.log" );
-
             LastUpdated = DateTime.Now;
         }
 
@@ -96,22 +100,6 @@ namespace Rock.Logging
             {
                 UpdateConfigFromSystemSettings();
             }
-        }
-
-        private RockLogLevel GetRockLogLevel()
-        {
-            var currentLogLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_LOG_LEVEL );
-
-            try
-            {
-                var logLevel = Enum.Parse( typeof( RockLogLevel ), currentLogLevel );
-                return ( RockLogLevel ) logLevel;
-            }
-            catch
-            {
-                return RockLogLevel.Off;
-            }
-
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Serilog.Events;
@@ -51,12 +50,31 @@ namespace Rock.Logging
         public List<RockLogEvent> GetEvents( int startIndex, int count )
         {
             rockLogger.Close();
-            var results = new List<RockLogEvent>();
-            var rockLogFiles = System.IO.Directory.GetFiles( rockLogDirectory, searchPattern ).OrderByDescending( s => s ).ToList();
 
+            var logs = GetLogLines( startIndex, count );
+
+            return GetRockLogEventsFromLogLines( startIndex, count, logs );
+        }
+
+        private List<RockLogEvent> GetRockLogEventsFromLogLines( int startIndex, int count, string[] logs )
+        {
+            var results = new List<RockLogEvent>();
+            var reversedStartIndex = ( logs.Length - 1 ) - startIndex;
+            var reversedEndIndex = reversedStartIndex - count;
+
+            for ( var i = reversedStartIndex; i > reversedEndIndex && i >= 0; i-- )
+            {
+                results.Add( GetLogEventFromLogLine( logs.ElementAt( i ) ) );
+            }
+
+            return results;
+        }
+
+        private string[] GetLogLines( int startIndex, int count )
+        {
+            var rockLogFiles = System.IO.Directory.GetFiles( rockLogDirectory, searchPattern ).OrderByDescending( s => s ).ToList();
             var currentFileIndex = 0;
             var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
-            //var logs = firstLogFile.Reverse();
 
             while ( ( startIndex >= logs.Length || startIndex + count >= logs.Length ) && currentFileIndex < ( rockLogFiles.Count - 1 ) )
             {
@@ -69,44 +87,9 @@ namespace Rock.Logging
                 logs = temp;
             }
 
-            var reversedStartIndex = ( logs.Length - 1 ) - startIndex;
-            var reversedEndIndex = reversedStartIndex - count;
-            for ( var i = reversedStartIndex; i > reversedEndIndex && i >= 0; i-- )
-            {
-                var evt = LogEventReader.ReadFromString( logs.ElementAt( i ), jsonSerializer );
-                var domain = evt.Properties["domain"].ToString();
-                evt.RemovePropertyIfPresent( "domain" );
-                var message = evt.RenderMessage().Replace( "{domain}", "" ).Trim();
-                domain = domain.Replace( "\"", "" );
-
-                results.Add( new RockLogEvent
-                {
-                    DateTime = evt.Timestamp.DateTime,
-                    Exception = evt.Exception,
-                    Level = GetRockLogLevelFromSerilogLevel( evt.Level ),
-                    Domain = domain,
-                    Message = message
-                } );
-            }
-            //using ( var clef = File.OpenText( rockConfiguration.LogPath ) )
-            //{
-            //    var reader = new LogEventReader( clef );
-
-            //    LogEvent evt;
-            //    while ( reader.TryRead( out evt ) )
-            //    {
-            //        results.Add( new RockLogEvent
-            //        {
-            //            DateTime = evt.Timestamp.DateTime,
-            //            Exception = evt.Exception,
-            //            Level = GetRockLogLevelFromSerilogLevel(evt.Level),
-            //            Message = evt.RenderMessage()
-            //        } );
-            //    }   
-            //}
-
-            return results;
+            return logs;
         }
+
         private RockLogLevel GetRockLogLevelFromSerilogLevel( LogEventLevel logLevel )
         {
             switch ( logLevel )
@@ -126,5 +109,24 @@ namespace Rock.Logging
             }
         }
 
+        private RockLogEvent GetLogEventFromLogLine( string logLine )
+        {
+            var evt = LogEventReader.ReadFromString( logLine, jsonSerializer );
+
+            var domain = evt.Properties["domain"].ToString();
+            evt.RemovePropertyIfPresent( "domain" );
+
+            var message = evt.RenderMessage().Replace( "{domain}", "" ).Trim();
+            domain = domain.Replace( "\"", "" );
+
+            return new RockLogEvent
+            {
+                DateTime = evt.Timestamp.DateTime,
+                Exception = evt.Exception,
+                Level = GetRockLogLevelFromSerilogLevel( evt.Level ),
+                Domain = domain,
+                Message = message
+            };
+        }
     }
 }

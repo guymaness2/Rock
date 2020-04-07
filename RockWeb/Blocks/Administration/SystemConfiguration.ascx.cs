@@ -16,21 +16,19 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using Rock;
-using Rock.Model;
-using Rock.Web.UI.Controls;
-using System.Configuration;
 using Microsoft.Web.XmlTransform;
-using Rock.SystemKey;
-using System.Threading.Tasks;
-using System.Linq;
-using Rock.Utility;
+using Rock;
 using Rock.Logging;
+using Rock.Model;
+using Rock.SystemKey;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -193,7 +191,7 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Text = "You will need to reload this page to continue.";
             }
         }
-        
+
         protected void btnLoggingSave_Click( object sender, EventArgs e )
         {
             if ( !Page.IsValid )
@@ -203,10 +201,15 @@ namespace RockWeb.Blocks.Administration
 
             nbLoggingMessage.Visible = true;
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_LOG_LEVEL, rblVerbosityLevel.SelectedValue );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_SIZE, txtMaxFileSize.Text );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_FILE_COUNT, txtFilesToRetain.Text );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG, string.Join( ",", cblDomainsToLog.SelectedValues ) );
+            var logConfig = new RockLogSystemSettings
+            {
+                LogLevel = rblVerbosityLevel.SelectedValue.ConvertToEnum<RockLogLevel>( RockLogLevel.Off ),
+                DomainsToLog = cblDomainsToLog.SelectedValues,
+                MaxFileSize = txtMaxFileSize.Text.AsInteger(),
+                NumberOfLogFiles = txtFilesToRetain.Text.AsInteger()
+            };
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, logConfig.ToJson() );
 
             nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
             nbLoggingMessage.Title = string.Empty;
@@ -241,14 +244,16 @@ namespace RockWeb.Blocks.Administration
             rblVerbosityLevel.DataSource = logLevel;
             rblVerbosityLevel.DataBind();
 
-            var currentLogLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_LOG_LEVEL );
-            if ( !string.IsNullOrWhiteSpace( currentLogLevel ) )
+            var rockConfig = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
+
+            if ( rockConfig == null )
             {
-                rblVerbosityLevel.SelectedValue = currentLogLevel;
+                return;
             }
 
-            txtFilesToRetain.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_FILE_COUNT );
-            txtMaxFileSize.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_FILE_SIZE );
+            rblVerbosityLevel.SelectedValue = rockConfig.LogLevel.ToString();
+            txtFilesToRetain.Text = rockConfig.NumberOfLogFiles.ToString();
+            txtMaxFileSize.Text = rockConfig.MaxFileSize.ToString();
 
             var definedValues = new DefinedValueService( new Rock.Data.RockContext() ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOGGING_DOMAINS.AsGuid() );
 
@@ -257,7 +262,7 @@ namespace RockWeb.Blocks.Administration
             cblDomainsToLog.DataValueField = "Value";
             cblDomainsToLog.DataBind();
 
-            cblDomainsToLog.SetValues( Rock.Web.SystemSettings.GetValue( SystemSetting.LOGGING_DOMAINS_TO_LOG ).Split( ',' ) );
+            cblDomainsToLog.SetValues( rockConfig.DomainsToLog );
         }
         /// <summary>
         /// Bind the available time zones and select the one that's configured in the
@@ -296,9 +301,6 @@ namespace RockWeb.Blocks.Administration
             {
                 // MaxRequestLength is in KB, so let's convert to MB for the users sake.
                 numbMaxSize.Text = ( section.MaxRequestLength / 1024 ).ToString();
-                // requestLengthDiskThreshold is in bytes and the MaxRequestLength must not be less than this value.
-                //numbMaxSize.MinimumValue = Math.Round(section.RequestLengthDiskThreshold * 10.48576, 0 ).ToString();
-                //numbMaxSize.ToolTip = string.Format( "between {0} and {1} MB", section.RequestLengthDiskThreshold, numbMaxSize.MaximumValue );
             }
         }
 

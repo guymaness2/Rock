@@ -1472,8 +1472,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
             if ( PagerTemplate != null )
             {
-                var virtualPageCount = AllowCustomPaging ? (int)Math.Ceiling((decimal) ( VirtualItemCount / PageSize )) : this.PageCount;
-                pagerTemplate.SetNavigation( virtualPageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
+                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
             }
         }
 

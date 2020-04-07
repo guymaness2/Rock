@@ -16,20 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-using Rock;
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Extension;
 using Rock.Logging;
-using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -105,16 +94,15 @@ namespace RockWeb.Blocks.Administration
             var logIndex = rGrid.PageIndex * rGrid.PageSize;
 
             var events = logReader.GetEvents( logIndex, rGrid.PageSize );
-            if(logIndex > 0 )
+            if ( logIndex > 0 )
             {
                 rGrid.EmptyDataText = "The end of the log entries have been reached. <a href=''>Start Over.</a>";
             }
             var logEventModels = new List<RockLogEventModel>();
-            for(var i = 0; i < events.Count; i++ )
+            for ( var i = 0; i < events.Count; i++ )
             {
                 logEventModels.Add( new RockLogEventModel
                 {
-                    Id = i,
                     DateTime = events[i].DateTime,
                     Domain = events[i].Domain,
                     Exception = events[i].Exception,
@@ -131,12 +119,11 @@ namespace RockWeb.Blocks.Administration
 
     internal class RockLogEventModel : RockLogEvent
     {
-        public int Id { get; set; }
         public string SerializedException
         {
             get
             {
-                if(Exception == null )
+                if ( Exception == null )
                 {
                     return string.Empty;
                 }

@@ -21,7 +21,7 @@ namespace Rock.Logging
     /// </summary>
     public static class RockLogger
     {
-        private static IRockLogger rockLog;
+        private static IRockLogger _log;
         /// <summary>
         /// Gets the logger with logging methods.
         /// </summary>
@@ -32,12 +32,12 @@ namespace Rock.Logging
         {
             get
             {
-                if ( rockLog == null )
+                if ( _log == null )
                 {
                     // In the future the RockLogConfiguration could be gotten via dependency injection, but not today.
-                    rockLog = new RockLoggerSerilog( new RockLogConfiguration() );
+                    _log = new RockLoggerSerilog( new RockLogConfiguration() );
                 }
-                return rockLog;
+                return _log;
             }
         }
 

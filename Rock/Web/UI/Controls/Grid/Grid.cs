@@ -215,7 +215,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        private bool showPaginationText = true;
+        private bool _showPaginationText = true;
         /// <summary>
         /// Gets or sets a value indicating whether the grid should show pagination text.
         /// </summary>
@@ -226,11 +226,11 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return showPaginationText;
+                return _showPaginationText;
             }
             set
             {
-                showPaginationText = value;
+                _showPaginationText = value;
                 if ( PagerTemplate != null )
                 {
                     var pageTemplate = PagerTemplate as PagerTemplate;

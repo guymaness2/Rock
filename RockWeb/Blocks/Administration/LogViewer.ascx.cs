@@ -98,38 +98,10 @@ namespace RockWeb.Blocks.Administration
             {
                 rGrid.EmptyDataText = "The end of the log entries have been reached. <a href=''>Start Over.</a>";
             }
-            var logEventModels = new List<RockLogEventModel>();
-            for ( var i = 0; i < events.Count; i++ )
-            {
-                logEventModels.Add( new RockLogEventModel
-                {
-                    DateTime = events[i].DateTime,
-                    Domain = events[i].Domain,
-                    Exception = events[i].Exception,
-                    Level = events[i].Level,
-                    Message = events[i].Message,
-                } );
-            }
             rGrid.VirtualItemCount = logReader.RecordCount;
-            rGrid.DataSource = logEventModels;
+            rGrid.DataSource = events;
             rGrid.DataBind();
         }
         #endregion
-    }
-
-    internal class RockLogEventModel : RockLogEvent
-    {
-        public string SerializedException
-        {
-            get
-            {
-                if ( Exception == null )
-                {
-                    return string.Empty;
-                }
-
-                return Exception.ToString();
-            }
-        }
     }
 }

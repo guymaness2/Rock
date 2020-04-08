@@ -62,5 +62,24 @@ namespace Rock.Logging
         /// The level.
         /// </value>
         public RockLogLevel Level { get; set; }
+
+        /// <summary>
+        /// Gets the serialized exception.
+        /// </summary>
+        /// <value>
+        /// The serialized exception.
+        /// </value>
+        public string SerializedException
+        {
+            get
+            {
+                if ( Exception == null )
+                {
+                    return string.Empty;
+                }
+
+                return Exception.ToString();
+            }
+        }
     }
 }

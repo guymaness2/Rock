@@ -1,4 +1,20 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
@@ -25,6 +41,8 @@ namespace Rock.Logging
                     mean reading every line in all files. So we are setting this value to a high value, but
                     we can't use int.MaxValue because that appears to cause some sort of issue in
                     the GridView.PageCount property and it would always return 1.
+
+                    The purpose of this field is to return the number of log records that exists, and is used be the LogViewer to set the pagination.
                 */
                 return 2000000000;
             }

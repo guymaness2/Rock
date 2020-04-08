@@ -134,6 +134,7 @@ namespace Rock.Migrations
                 string.Empty,
                 Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_OTHER );
         }
+
         private void AddRockLogSystemSettings()
         {
             var defaultRockLogSystemSettings = new RockLogSystemSettings
@@ -153,54 +154,38 @@ namespace Rock.Migrations
                 "Rock Logging System Settings",
                 0,
                 serializedRockLog,
-                "B9D4A315-8672-4214-B5D3-01A06C3CAD9F",
+                SystemGuid.Attribute.DEFINED_VALUE_LOG_SYSTEM_SETTINGS,
                 SystemSetting.ROCK_LOGGING_SETTINGS );
         }
 
         private void AddLogPage()
         {
-            RockMigrationHelper.UpdateBlockType( "Logs", "Block to view system logs.", "~/Blocks/Administration/LogViewer.ascx", "Administration", "6059FC03-E398-4359-8632-909B63FFA550" );
+            RockMigrationHelper.UpdateBlockType( "Logs",
+                "Block to view system logs.",
+                "~/Blocks/Administration/LogViewer.ascx",
+                "Administration",
+                SystemGuid.BlockType.LOG_VIEWER );
 
-            RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Rock Logs", "", "82EC7718-6549-4531-A0AB-7957919AE71C", "fa fa-file-medical-alt" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( true,
+                SystemGuid.Page.SYSTEM_SETTINGS,
+                SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE,
+                "Rock Logs",
+                "",
+                SystemGuid.Page.LOG_VIEWER,
+                "fa fa-file-medical-alt" ); // Site:Rock RMS
 
             // Add Block to Page: Rock Logs Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "82EC7718-6549-4531-A0AB-7957919AE71C".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "6059FC03-E398-4359-8632-909B63FFA550".AsGuid(), "Rock Logs", "Main", @"", @"", 0, "BDEF9AA0-55FC-4A66-8938-2AB2E075521B" );
-        }
-
-        private void RemoveRockLogLevelDefinedValues()
-        {
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_CMS );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_EVENT );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_REPORTING );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_COMMUNICATIONS );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_FINANCE );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_STEPS );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_CONNECTION );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_GROUP );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_STREAKS );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_CORE );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_JOBS );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_WORKFLOW );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_CRM );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_PRAYER );
-            RockMigrationHelper.DeleteDefinedValue( Rock.SystemGuid.DefinedValue.LOGGING_DOMAIN_OTHER );
-
-            RockMigrationHelper.DeleteDefinedType( Rock.SystemGuid.DefinedType.LOGGING_DOMAINS );
-        }
-
-        private void RemoveRockLogSystemSettings()
-        {
-            RockMigrationHelper.DeleteAttribute( "B9D4A315-8672-4214-B5D3-01A06C3CAD9F" );
-        }
-
-        private void RemoveLogPage()
-        {
-            // Remove Block: Rock Logs, from Page: Rock Logs, Site: Rock RMS
-            RockMigrationHelper.DeleteBlock( "BDEF9AA0-55FC-4A66-8938-2AB2E075521B" );
-
-            RockMigrationHelper.DeletePage( "82EC7718-6549-4531-A0AB-7957919AE71C" ); //  Page: Rock Logs, Layout: Full Width, Site: Rock RMS
-
-            RockMigrationHelper.DeleteBlockType( "6059FC03-E398-4359-8632-909B63FFA550" ); // Logs
+            RockMigrationHelper.AddBlock( true,
+                SystemGuid.Page.LOG_VIEWER.AsGuid(),
+                null,
+                SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(),
+                SystemGuid.BlockType.LOG_VIEWER.AsGuid(),
+                "Rock Logs",
+                "Main",
+                "",
+                "",
+                0,
+                SystemGuid.Block.LOG_VIEWER );
         }
 
         /// <summary>
@@ -210,9 +195,24 @@ namespace Rock.Migrations
         {
             RemoveRockLogSystemSettings();
 
-            RemoveRockLogLevelDefinedValues();
-
             RemoveLogPage();
+        }
+
+        private void RemoveRockLogSystemSettings()
+        {
+            RockMigrationHelper.DeleteAttribute( SystemGuid.Attribute.DEFINED_VALUE_LOG_SYSTEM_SETTINGS );
+        }
+
+        private void RemoveLogPage()
+        {
+            // Remove Block: Rock Logs, from Page: Rock Logs, Site: Rock RMS
+            RockMigrationHelper.DeleteBlock( SystemGuid.Block.LOG_VIEWER );
+
+            //  Page: Rock Logs, Layout: Full Width, Site: Rock RMS
+            RockMigrationHelper.DeletePage( SystemGuid.Page.LOG_VIEWER );
+
+            // Logs
+            RockMigrationHelper.DeleteBlockType( SystemGuid.BlockType.LOG_VIEWER );
         }
     }
 }

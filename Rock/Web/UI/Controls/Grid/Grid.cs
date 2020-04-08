@@ -216,6 +216,12 @@ namespace Rock.Web.UI.Controls
         }
 
         private bool showPaginationText = true;
+        /// <summary>
+        /// Gets or sets a value indicating whether the grid should show pagination text.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> show pagination text; otherwise don't default is true, <c>false</c>.
+        /// </value>
         public bool ShowPaginationText
         {
             get

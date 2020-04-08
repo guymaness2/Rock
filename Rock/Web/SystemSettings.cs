@@ -122,6 +122,12 @@ namespace Rock.Web
 
         private static DayOfWeek? startDayOfWeekCache;
 
+        /// <summary>
+        /// Gets the last updated.
+        /// </summary>
+        /// <value>
+        /// The last updated.
+        /// </value>
         public static DateTime LastUpdated
         {
             get

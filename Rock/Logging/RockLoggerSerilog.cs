@@ -95,12 +95,7 @@ namespace Rock.Logging
         {
             EnsureLoggerExistsAndUpdated();
 
-            if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
-            {
-                return;
-            }
-
-            if ( !_domains.Contains( domain.ToUpper() ) )
+            if ( !ShouldLogEntry( logLevel, domain ) )
             {
                 return;
             }
@@ -131,12 +126,7 @@ namespace Rock.Logging
         {
             EnsureLoggerExistsAndUpdated();
 
-            if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
-            {
-                return;
-            }
-
-            if ( !_domains.Contains( domain.ToUpper() ) )
+            if ( !ShouldLogEntry( logLevel, domain ) )
             {
                 return;
             }
@@ -167,12 +157,7 @@ namespace Rock.Logging
         {
             EnsureLoggerExistsAndUpdated();
 
-            if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
-            {
-                return;
-            }
-
-            if ( !_domains.Contains( domain.ToUpper() ) )
+            if ( !ShouldLogEntry( logLevel, domain ) )
             {
                 return;
             }
@@ -205,12 +190,7 @@ namespace Rock.Logging
         {
             EnsureLoggerExistsAndUpdated();
 
-            if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
-            {
-                return;
-            }
-
-            if ( !_domains.Contains( domain.ToUpper() ) )
+            if ( !ShouldLogEntry( logLevel, domain ) )
             {
                 return;
             }
@@ -775,7 +755,7 @@ namespace Rock.Logging
             _domains = new HashSet<string>( LogConfiguration.DomainsToLog.Select( s => s.ToUpper() ).Distinct() );
             _logger = new LoggerConfiguration()
                  .MinimumLevel
-                 .GetFromConfiguration( rockLogConfiguration.LogLevel )
+                 .Verbose()
                  .WriteTo
                  .File( new CompactJsonFormatter(),
                      rockLogConfiguration.LogPath,
@@ -797,6 +777,20 @@ namespace Rock.Logging
                 Close();
                 LoadConfiguration( LogConfiguration );
             }
+        }
+
+        private bool ShouldLogEntry( RockLogLevel logLevel, string domain )
+        {
+            if ( logLevel > LogConfiguration.LogLevel || logLevel == RockLogLevel.Off )
+            {
+                return false;
+            }
+
+            if ( !_domains.Contains( domain.ToUpper() ) )
+            {
+                return false;
+            }
+            return true;
         }
         #endregion
     }

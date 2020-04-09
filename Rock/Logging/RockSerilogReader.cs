@@ -23,6 +23,12 @@ using Serilog.Formatting.Compact.Reader;
 
 namespace Rock.Logging
 {
+    /// <summary>
+    /// This is the internal implementation of the IRockLogReader. Since the logger is
+    /// Serilog this is also serilog, but could be replaced with something different at some
+    /// point in time.
+    /// </summary>
+    /// <seealso cref="Rock.Logging.IRockLogReader" />
     internal class RockSerilogReader : IRockLogReader
     {
         private readonly IRockLogger rockLogger;
@@ -30,6 +36,12 @@ namespace Rock.Logging
         private readonly string searchPattern;
         private readonly JsonSerializer jsonSerializer;
 
+        /// <summary>
+        /// Gets the record count.
+        /// </summary>
+        /// <value>
+        /// The record count.
+        /// </value>
         public int RecordCount
         {
             get
@@ -48,6 +60,10 @@ namespace Rock.Logging
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockSerilogReader"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
         public RockSerilogReader( IRockLogger logger )
         {
             rockLogger = logger;
@@ -65,6 +81,12 @@ namespace Rock.Logging
             } );
         }
 
+        /// <summary>
+        /// Gets the events.
+        /// </summary>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="count">The count.</param>
+        /// <returns></returns>
         public List<RockLogEvent> GetEvents( int startIndex, int count )
         {
             rockLogger.Close();

@@ -22,14 +22,30 @@ using Serilog.Formatting.Compact;
 
 namespace Rock.Logging
 {
+    /// <summary>
+    /// This is the internal implementation of the IRockLogger interface. This
+    /// one uses Serilog, but a different implementation could be used in the
+    /// future if required.
+    /// </summary>
+    /// <seealso cref="Rock.Logging.IRockLogger" />
     internal class RockLoggerSerilog : IRockLogger
     {
         private const string DEFAULT_DOMAIN = "OTHER";
-        private DateTime ConfigurationLastLoaded;
-        private ILogger logger;
+        private DateTime _ConfigurationLastLoaded;
+        private ILogger _logger;
 
+        /// <summary>
+        /// Gets the log configuration.
+        /// </summary>
+        /// <value>
+        /// The log configuration.
+        /// </value>
         public IRockLogConfiguration LogConfiguration { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockLoggerSerilog"/> class.
+        /// </summary>
+        /// <param name="rockLogConfiguration">The rock log configuration.</param>
         public RockLoggerSerilog( IRockLogConfiguration rockLogConfiguration )
         {
             LogConfiguration = rockLogConfiguration;
@@ -38,28 +54,42 @@ namespace Rock.Logging
 
         ~RockLoggerSerilog()
         {
-            if ( logger != null )
+            if ( _logger != null )
             {
-                ( ( IDisposable ) logger ).Dispose();
-                logger = null;
+                ( ( IDisposable ) _logger ).Dispose();
+                _logger = null;
             }
         }
 
+        /// <summary>
+        /// Closes this instance and releases file locks.
+        /// </summary>
         public void Close()
         {
-            if ( logger != null )
+            if ( _logger != null )
             {
-                ( ( IDisposable ) logger ).Dispose();
-                logger = null;
+                ( ( IDisposable ) _logger ).Dispose();
+                _logger = null;
             }
         }
 
         #region WriteToLog Methods
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void WriteToLog( RockLogLevel logLevel, string messageTemplate )
         {
             WriteToLog( logLevel, DEFAULT_DOMAIN, messageTemplate );
         }
 
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void WriteToLog( RockLogLevel logLevel, string domain, string messageTemplate )
         {
             EnsureLoggerExistsAndUpdated();
@@ -70,14 +100,27 @@ namespace Rock.Logging
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
+            _logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
         }
 
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void WriteToLog( RockLogLevel logLevel, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( logLevel, DEFAULT_DOMAIN, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void WriteToLog( RockLogLevel logLevel, string domain, string messageTemplate, params object[] propertyValues )
         {
             EnsureLoggerExistsAndUpdated();
@@ -88,14 +131,27 @@ namespace Rock.Logging
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
+            _logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
         }
 
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string messageTemplate )
         {
             WriteToLog( logLevel, exception, DEFAULT_DOMAIN, messageTemplate );
         }
 
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string domain, string messageTemplate )
         {
             EnsureLoggerExistsAndUpdated();
@@ -106,14 +162,29 @@ namespace Rock.Logging
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
+            _logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
         }
 
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( logLevel, exception, DEFAULT_DOMAIN, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void WriteToLog( RockLogLevel logLevel, Exception exception, string domain, string messageTemplate, params object[] propertyValues )
         {
             EnsureLoggerExistsAndUpdated();
@@ -124,46 +195,90 @@ namespace Rock.Logging
             }
 
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
-            logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
+            _logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), AddDomainToObjectArray( propertyValues, domain.ToUpper() ) );
         }
         #endregion
 
         #region Verbose Methods
+        /// <summary>
+        /// Log Verbose with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
         public void Verbose( string messageTemplate )
         {
             WriteToLog( RockLogLevel.All, messageTemplate );
         }
 
+        /// <summary>
+        /// Log Verbose with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Verbose( string domain, string messageTemplate )
         {
             WriteToLog( RockLogLevel.All, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Log Verbose with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Verbose( string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.All, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Log Verbose with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Verbose( string domain, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.All, domain, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Log Verbose with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Verbose( Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.All, exception, messageTemplate );
         }
 
+        /// <summary>
+        /// Log Verbose with the specified domain and message template.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Verbose( string domain, Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.All, exception, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Log Verbose with the specified exception and message template.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Verbose( Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.All, exception, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Log Verbose with the specified domain, exception, and message template.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Verbose( string domain, Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.All, exception, domain, messageTemplate, propertyValues );
@@ -172,41 +287,85 @@ namespace Rock.Logging
 
         #region Debug Methods
 
+        /// <summary>
+        /// Logs Debug with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
         public void Debug( string messageTemplate )
         {
             WriteToLog( RockLogLevel.Debug, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs Debug with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Debug( string domain, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Debug, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs Debug with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Debug( string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Debug, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs Debug with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Debug( string domain, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Debug, domain, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs Debug with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Debug( Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Debug, exception, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs Debug with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Debug( string domain, Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Debug, exception, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs Debug with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Debug( Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Debug, exception, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs Debug with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Debug( string domain, Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Debug, exception, domain, messageTemplate, propertyValues );
@@ -215,41 +374,85 @@ namespace Rock.Logging
         #endregion
 
         #region Information Methods
+        /// <summary>
+        /// Logs information with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
         public void Information( string messageTemplate )
         {
             WriteToLog( RockLogLevel.Info, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs information with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Information( string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Info, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs information with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Information( Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Info, exception, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs information with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Information( Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Info, exception, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Information( string domain, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Info, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Information( string domain, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Info, domain, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Information( string domain, Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Info, exception, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Information( string domain, Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Info, exception, domain, messageTemplate, propertyValues );
@@ -257,41 +460,85 @@ namespace Rock.Logging
         #endregion
 
         #region Warning Methods
+        /// <summary>
+        /// Warnings the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
         public void Warning( string messageTemplate )
         {
             WriteToLog( RockLogLevel.Warning, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs warnings the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Warning( string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Warning, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs information with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Warning( Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Warning, exception, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs information with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Warning( Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Warning, exception, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Warning( string domain, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Warning, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Warning( string domain, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Warning, domain, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Warning( string domain, Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Warning, exception, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs information with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Warning( string domain, Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Warning, exception, domain, messageTemplate, propertyValues );
@@ -299,41 +546,85 @@ namespace Rock.Logging
         #endregion
 
         #region Error Methods
+        /// <summary>
+        /// Logs errors with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
         public void Error( string messageTemplate )
         {
             WriteToLog( RockLogLevel.Error, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs errors with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Error( string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Error, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs errors with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Error( Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Error, exception, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs errors with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Error( Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Error, exception, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs errors with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Error( string domain, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Error, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs errors with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Error( string domain, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Error, domain, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs errors with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Error( string domain, Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Error, exception, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs errors with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Error( string domain, Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Error, exception, domain, messageTemplate, propertyValues );
@@ -341,40 +632,85 @@ namespace Rock.Logging
         #endregion
 
         #region Fatal Methods
+        /// <summary>
+        /// Logs fatal message with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
         public void Fatal( string messageTemplate )
         {
             WriteToLog( RockLogLevel.Fatal, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs fatal message with the specified message template.
+        /// </summary>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Fatal( string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Fatal, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs fatal message with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Fatal( Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Fatal, exception, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs fatal message with the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Fatal( Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Fatal, exception, messageTemplate, propertyValues );
         }
+
+        /// <summary>
+        /// Logs fatal message with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Fatal( string domain, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Fatal, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs fatal message with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Fatal( string domain, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Fatal, domain, messageTemplate, propertyValues );
         }
 
+        /// <summary>
+        /// Logs fatal message with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
         public void Fatal( string domain, Exception exception, string messageTemplate )
         {
             WriteToLog( RockLogLevel.Fatal, exception, domain, messageTemplate );
         }
 
+        /// <summary>
+        /// Logs fatal message with the specified domain.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The property values.</param>
         public void Fatal( string domain, Exception exception, string messageTemplate, params object[] propertyValues )
         {
             WriteToLog( RockLogLevel.Fatal, exception, domain, messageTemplate, propertyValues );
@@ -431,7 +767,7 @@ namespace Rock.Logging
         {
             LogConfiguration.DomainsToLog.ForEach( s => s = s.ToUpper() );
 
-            logger = new LoggerConfiguration()
+            _logger = new LoggerConfiguration()
                  .MinimumLevel
                  .Verbose()
                  .WriteTo
@@ -448,12 +784,12 @@ namespace Rock.Logging
                  .ByIncludingOnly( ( e ) => ShouldLogDomain( e ) )
                  .CreateLogger();
 
-            ConfigurationLastLoaded = DateTime.Now;
+            _ConfigurationLastLoaded = DateTime.Now;
         }
 
         private void EnsureLoggerExistsAndUpdated()
         {
-            if ( ConfigurationLastLoaded < LogConfiguration.LastUpdated || logger == null )
+            if ( _ConfigurationLastLoaded < LogConfiguration.LastUpdated || _logger == null )
             {
                 Close();
                 LoadConfiguration( LogConfiguration );

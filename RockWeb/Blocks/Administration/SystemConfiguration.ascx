@@ -30,7 +30,7 @@
                         ValidationGroup="LoggingSettings"></Rock:RockRadioButtonList>
 
                     <Rock:RockCheckBoxList ID="cblDomainsToLog" runat="server"
-                        Label="Domain to Output"
+                        Label="Domains to Output"
                         ValidationGroup="LoggingSettings"
                         RepeatColumns="5"
                         RepeatDirection="Horizontal" />

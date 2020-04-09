@@ -20,68 +20,113 @@ using Rock.SystemKey;
 
 namespace Rock.Logging
 {
+    /// <summary>
+    /// This is the internal implementation of IRockLogConfiguration the gets
+    /// the configuration information from SystemSetting.ROCK_LOGGING_SETTINGS
+    /// global attribute.
+    /// </summary>
+    /// <seealso cref="Rock.Logging.IRockLogConfiguration" />
     internal class RockLogConfiguration : IRockLogConfiguration
     {
-        private RockLogLevel logLevel;
+        private RockLogLevel _logLevel;
+        /// <summary>
+        /// Gets or sets the log level.
+        /// </summary>
+        /// <value>
+        /// The log level.
+        /// </value>
         public RockLogLevel LogLevel
         {
             get
             {
                 UpdateConfigIfRequired();
-                return logLevel;
+                return _logLevel;
             }
             set
             {
-                logLevel = value;
+                _logLevel = value;
             }
         }
 
-        private int maxFileSize;
+        private int _maxFileSize;
+        /// <summary>
+        /// Gets or sets the maximum size of the file.
+        /// </summary>
+        /// <value>
+        /// The maximum size of the file.
+        /// </value>
         public int MaxFileSize
         {
             get
             {
                 UpdateConfigIfRequired();
-                return maxFileSize;
+                return _maxFileSize;
             }
             set
             {
-                maxFileSize = value;
+                _maxFileSize = value;
             }
         }
 
-        private int numberOfLogFiles;
+        private int _numberOfLogFiles;
+        /// <summary>
+        /// Gets or sets the number of log files.
+        /// </summary>
+        /// <value>
+        /// The number of log files.
+        /// </value>
         public int NumberOfLogFiles
         {
             get
             {
                 UpdateConfigIfRequired();
-                return numberOfLogFiles;
+                return _numberOfLogFiles;
             }
             set
             {
-                numberOfLogFiles = value;
+                _numberOfLogFiles = value;
             }
         }
 
-        private List<string> domainsToLog;
+        private List<string> _domainsToLog;
+        /// <summary>
+        /// Gets or sets the domains to log.
+        /// </summary>
+        /// <value>
+        /// The domains to log.
+        /// </value>
         public List<string> DomainsToLog
         {
             get
             {
                 UpdateConfigIfRequired();
-                return domainsToLog;
+                return _domainsToLog;
             }
             set
             {
-                domainsToLog = value;
+                _domainsToLog = value;
             }
         }
 
+        /// <summary>
+        /// Gets or sets the last updated.
+        /// </summary>
+        /// <value>
+        /// The last updated.
+        /// </value>
         public DateTime LastUpdated { get; set; }
 
+        /// <summary>
+        /// Gets or sets the log path.
+        /// </summary>
+        /// <value>
+        /// The log path.
+        /// </value>
         public string LogPath { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockLogConfiguration"/> class.
+        /// </summary>
         public RockLogConfiguration()
         {
             UpdateConfigFromSystemSettings();

@@ -9,11 +9,11 @@ namespace Rock.Migrations
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
     public sealed partial class AddRockLoggingConfigurationAndViewer : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddContentChannelCategory));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(PageRouteIsGlobal));
         
         string IMigrationMetadata.Id
         {
-            get { return "202004071419329_AddRockLoggingConfigurationAndViewer"; }
+            get { return "202004091341367_AddRockLoggingConfigurationAndViewer"; }
         }
         
         string IMigrationMetadata.Source

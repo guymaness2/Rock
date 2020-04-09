@@ -177,9 +177,13 @@
     <Compile Include="Migrations\202004070848464_AddContentChannelCategory.Designer.cs">
       <DependentUpon>202004070848464_AddContentChannelCategory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202004071419329_AddRockLoggingConfigurationAndViewer.cs" />
-    <Compile Include="Migrations\202004071419329_AddRockLoggingConfigurationAndViewer.Designer.cs">
-      <DependentUpon>202004071419329_AddRockLoggingConfigurationAndViewer.cs</DependentUpon>
+    <Compile Include="Migrations\202004071636065_RegistrationFeeHideWhenNone.cs" />
+    <Compile Include="Migrations\202004071636065_RegistrationFeeHideWhenNone.Designer.cs">
+      <DependentUpon>202004071636065_RegistrationFeeHideWhenNone.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004072050560_PageRouteIsGlobal.cs" />
+    <Compile Include="Migrations\202004072050560_PageRouteIsGlobal.Designer.cs">
+      <DependentUpon>202004072050560_PageRouteIsGlobal.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
@@ -1250,8 +1254,11 @@
     <EmbeddedResource Include="Migrations\202004070848464_AddContentChannelCategory.resx">
       <DependentUpon>202004070848464_AddContentChannelCategory.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202004071419329_AddRockLoggingConfigurationAndViewer.resx">
-      <DependentUpon>202004071419329_AddRockLoggingConfigurationAndViewer.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202004071636065_RegistrationFeeHideWhenNone.resx">
+      <DependentUpon>202004071636065_RegistrationFeeHideWhenNone.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004072050560_PageRouteIsGlobal.resx">
+      <DependentUpon>202004072050560_PageRouteIsGlobal.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -2029,7 +2036,9 @@
     <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees_down.sql">
       <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql" />
+    <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql">
+      <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
     </Content>

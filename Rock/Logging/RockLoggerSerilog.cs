@@ -33,6 +33,7 @@ namespace Rock.Logging
         private const string DEFAULT_DOMAIN = "OTHER";
         private DateTime _ConfigurationLastLoaded;
         private ILogger _logger;
+        private HashSet<string> _domains;
 
         /// <summary>
         /// Gets the log configuration.
@@ -99,6 +100,11 @@ namespace Rock.Logging
                 return;
             }
 
+            if ( !_domains.Contains( domain.ToUpper() ) )
+            {
+                return;
+            }
+
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
             _logger.Write( serilogLogLevel, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
         }
@@ -126,6 +132,11 @@ namespace Rock.Logging
             EnsureLoggerExistsAndUpdated();
 
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
+            {
+                return;
+            }
+
+            if ( !_domains.Contains( domain.ToUpper() ) )
             {
                 return;
             }
@@ -161,6 +172,11 @@ namespace Rock.Logging
                 return;
             }
 
+            if ( !_domains.Contains( domain.ToUpper() ) )
+            {
+                return;
+            }
+
             var serilogLogLevel = GetLogEventLevelFromRockLogLevel( logLevel );
             _logger.Write( serilogLogLevel, exception, GetMessageTemplateWithDomain( messageTemplate ), domain.ToUpper() );
         }
@@ -190,6 +206,11 @@ namespace Rock.Logging
             EnsureLoggerExistsAndUpdated();
 
             if ( LogConfiguration.LogLevel == RockLogLevel.Off || logLevel == RockLogLevel.Off )
+            {
+                return;
+            }
+
+            if ( !_domains.Contains( domain.ToUpper() ) )
             {
                 return;
             }
@@ -749,39 +770,21 @@ namespace Rock.Logging
             }
         }
 
-        private bool ShouldLogDomain( Serilog.Events.LogEvent e )
-        {
-            if ( !e.Properties.ContainsKey( "domain" ) )
-            {
-                return false;
-            }
-            var domain = e.Properties["domain"] as Serilog.Events.ScalarValue;
-            if ( domain == null )
-            {
-                return false;
-            }
-            return LogConfiguration.DomainsToLog.Contains( domain.Value.ToString(), StringComparer.InvariantCultureIgnoreCase );
-        }
-
         private void LoadConfiguration( IRockLogConfiguration rockLogConfiguration )
         {
-            LogConfiguration.DomainsToLog.ForEach( s => s = s.ToUpper() );
-
+            _domains = new HashSet<string>( LogConfiguration.DomainsToLog.Select( s => s.ToUpper() ).Distinct() );
             _logger = new LoggerConfiguration()
                  .MinimumLevel
-                 .Verbose()
+                 .GetFromConfiguration( rockLogConfiguration.LogLevel )
                  .WriteTo
                  .File( new CompactJsonFormatter(),
                      rockLogConfiguration.LogPath,
                      rollingInterval: RollingInterval.Infinite,
                      buffered: true,
                      shared: false,
-                     restrictedToMinimumLevel: GetLogEventLevelFromRockLogLevel( rockLogConfiguration.LogLevel ),
                      retainedFileCountLimit: rockLogConfiguration.NumberOfLogFiles,
                      rollOnFileSizeLimit: true,
                      fileSizeLimitBytes: rockLogConfiguration.MaxFileSize * 1024 * 1024 )
-                 .Filter
-                 .ByIncludingOnly( ( e ) => ShouldLogDomain( e ) )
                  .CreateLogger();
 
             _ConfigurationLastLoaded = DateTime.Now;

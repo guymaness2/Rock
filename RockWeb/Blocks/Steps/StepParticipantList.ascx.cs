@@ -981,7 +981,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             var campusId = cpCampusFilter.SelectedCampusId;
-            if (campusId != null )
+            if ( campusId != null )
             {
                 qry = qry.Where( m => m.CampusId == campusId );
             }
@@ -1120,7 +1120,7 @@ namespace RockWeb.Blocks.Steps
             public string StepStatusName { get; set; }
             public bool IsCompleted { get; set; }
             public string Note { get; set; }
-            
+
             public Person Person { get; set; }
             public string CampusName { get; set; }
         }

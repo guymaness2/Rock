@@ -369,7 +369,7 @@ namespace RockWeb.Blocks.Steps
             step.EndDateTime = stepType.HasEndDate ? rdpEndDate.SelectedDate : null;
             step.StepStatusId = rsspStatus.SelectedValueAsId();
 
-            
+
             step.CampusId = cpCampus.SelectedCampusId;
 
             // Update the completed date time, which is based on the start, end, and status

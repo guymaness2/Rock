@@ -126,6 +126,7 @@ namespace RockWeb.Blocks.Steps
             public const string DateStarted = "DateStarted";
             public const string DateCompleted = "DateCompleted";
             public const string Note = "Note";
+            public const string Campus = "Campus";
         }
 
         #endregion Filter Keys
@@ -362,6 +363,7 @@ namespace RockWeb.Blocks.Steps
             rFilter.SaveUserPreference( FilterKey.DateStarted, "Date Started", drpDateStarted.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.DateCompleted, "Date Completed", drpDateCompleted.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.Note, "Note", tbNote.Text );
+            rFilter.SaveUserPreference( FilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
 
             // Save filter settings for custom attributes.
             if ( this.AvailableAttributes != null )
@@ -666,6 +668,7 @@ namespace RockWeb.Blocks.Steps
             tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
             tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
             tbNote.Text = rFilter.GetUserPreference( FilterKey.Note );
+            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( FilterKey.Campus ).AsIntegerOrNull();
 
             string statusValue = rFilter.GetUserPreference( FilterKey.StepStatus );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
@@ -977,6 +980,12 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => m.Note.Contains( note ) );
             }
 
+            var campusId = cpCampusFilter.SelectedCampusId;
+            if (campusId != null )
+            {
+                qry = qry.Where( m => m.CampusId == campusId );
+            }
+
             // Filter query by any configured attribute filters
             if ( AvailableAttributes != null && AvailableAttributes.Any() )
             {
@@ -1031,6 +1040,7 @@ namespace RockWeb.Blocks.Steps
                 StepStatusName = ( x.StepStatus == null ? "" : x.StepStatus.Name ),
                 IsCompleted = ( x.StepStatus == null ? false : x.StepStatus.IsCompleteStatus ),
                 Note = x.Note,
+                CampusName = x.Campus == null ? string.Empty : x.Campus.Name,
                 Person = x.PersonAlias.Person
             } );
 
@@ -1110,8 +1120,9 @@ namespace RockWeb.Blocks.Steps
             public string StepStatusName { get; set; }
             public bool IsCompleted { get; set; }
             public string Note { get; set; }
-
+            
             public Person Person { get; set; }
+            public string CampusName { get; set; }
         }
 
         #endregion

@@ -101,6 +101,17 @@ namespace Rock.Workflow.Action
         key: AttributeKey.StepAttribute,
         fieldTypeClassNames: new string[] { "Rock.Field.Types.StepFieldType" } )]
 
+    [WorkflowTextOrAttribute(
+        textLabel: "Campus",
+        attributeLabel: "Attribute Value",
+        description: "The campus where the step was completed.",
+        required: false,
+        order: 6,
+        key: AttributeKey.Campus,
+        fieldTypeClassNames: new string[] {
+            "Rock.Field.Types.CampusFieldType",
+            "Rock.Field.Types.TextFieldType" } )]
+
     #endregion Attributes
 
     public class AddStep : ActionComponent
@@ -116,6 +127,7 @@ namespace Rock.Workflow.Action
             public const string StartDate = "StartDate";
             public const string EndDate = "EndDate";
             public const string StepAttribute = "StepAttribute";
+            public const string Campus = "Campus";
         }
 
         /// <summary>
@@ -190,6 +202,19 @@ namespace Rock.Workflow.Action
             var startDate = GetLavaAttributeValue( action, AttributeKey.StartDate ).AsDateTime() ?? RockDateTime.Now;
             var endDate = GetLavaAttributeValue( action, AttributeKey.EndDate ).AsDateTime();
 
+            var campusAttributeValue = GetLavaAttributeValue( action, AttributeKey.Campus );
+            var campusId = campusAttributeValue.AsIntegerOrNull();
+            var campusGuid = campusAttributeValue.AsGuidOrNull();
+            
+            if(campusGuid != null )
+            {
+                var campus = new CampusService( new RockContext() ).Get( campusGuid.Value );
+                if(campus != null )
+                {
+                    campusId = campus.Id;
+                }
+            }
+
             // The completed date is today or the end date if the status is a completed status
             var completedDate = stepStatus.IsCompleteStatus ? ( endDate ?? RockDateTime.Now ) : ( DateTime? ) null;
 
@@ -201,7 +226,8 @@ namespace Rock.Workflow.Action
                 StartDateTime = startDate,
                 EndDateTime = endDate,
                 CompletedDateTime = completedDate,
-                StepStatusId = stepStatus.Id
+                StepStatusId = stepStatus.Id,
+                CampusId = campusId
             };
 
             // Validate the step
